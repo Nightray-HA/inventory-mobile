@@ -61,3 +61,20 @@ export async function removePassword(db: SQLiteDatabase): Promise<void> {
   await SecureStore.deleteItemAsync(PASSWORD_KEY);
   await deleteSetting(db, PASSWORD_SET_FLAG);
 }
+
+// ─── User Profile ─────────────────────────────────────────────────────────────
+
+/**
+ * Get stored username
+ */
+export async function getUserName(db: SQLiteDatabase): Promise<string> {
+  const name = await getSetting(db, 'user_name');
+  return name ?? '';
+}
+
+/**
+ * Set username
+ */
+export async function setUserName(db: SQLiteDatabase, name: string): Promise<void> {
+  await setSetting(db, 'user_name', name);
+}

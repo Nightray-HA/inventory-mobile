@@ -1,8 +1,9 @@
 import * as XLSX from 'xlsx';
 import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
 import { type Transaction, type ReportFilter } from '@/types';
+import { saveToSafDirectory, saveBase64File } from '@/lib/utils/storage';
 import { formatDate, formatDateTime } from '@/lib/utils/date';
-import { saveBase64File } from '@/lib/utils/storage';
 
 export async function generateAndShareExcel(
   transactions: Transaction[],
@@ -102,8 +103,20 @@ export async function generateAndShareExcel(
 
   // ── Write & Share ─────────────────────────────────────────────────────────
   const base64 = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
-  const filename = `laporan_inventori_${Date.now()}.xlsx`;
+  const filename = `Laporan_${filter.type}_${formatDate(filter.startDate, 'yyyyMMdd')}.xlsx`;
   const uri = await saveBase64File(base64, filename);
+
+  if (Platform.OS === 'android') {
+    try {
+      await saveToSafDirectory(uri, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      return;
+    } catch (e: any) {
+      if (e.message && e.message.includes('No SAF directory selected')) {
+        return; // User cancelled
+      }
+      // Continue to sharing fallback
+    }
+  }
 
   await Sharing.shareAsync(uri, {
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

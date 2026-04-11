@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,12 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useItems } from '@/hooks/useItems';
+import { getUserName } from '@/lib/auth';
 import { StatCard } from '@/components/features/dashboard/StatCard';
 import { StockAlertCard } from '@/components/features/dashboard/StockAlertCard';
 import { TransactionCard } from '@/components/features/transactions/TransactionCard';
@@ -22,14 +25,22 @@ import { formatRupiah, formatCompact } from '@/lib/utils/currency';
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
+  const db = useSQLiteContext();
   const { dashboardStats, transactions, loadDashboardStats, loadTransactions, isLoading } = useTransactions();
   const { lowStockItems, loadLowStock } = useItems();
+  const [userName, setUserNameStr] = useState('');
 
   const load = useCallback(async () => {
     await Promise.all([loadDashboardStats(), loadLowStock(), loadTransactions({ type: 'all' })]);
-  }, [loadDashboardStats, loadLowStock, loadTransactions]);
+    const name = await getUserName(db);
+    setUserNameStr(name);
+  }, [loadDashboardStats, loadLowStock, loadTransactions, db]);
 
-  useEffect(() => { load(); }, []);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   const stats = dashboardStats;
   const recentTx = transactions.slice(0, 5);
@@ -44,8 +55,8 @@ export default function DashboardScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Selamat datang 👋</Text>
-          <Text style={styles.headerTitle}>Dashboard Inventori</Text>
+          <Text style={styles.headerTitle}>Selamat datang kembali, {userName || 'Pengguna'}</Text>
+          <Text style={styles.greeting}>Dashboard</Text>
         </View>
         <TouchableOpacity onPress={() => router.push('/(main)/settings')} style={styles.settingsBtn}>
           <Ionicons name="settings-outline" size={22} color={Colors.text.secondary} />
@@ -67,24 +78,28 @@ export default function DashboardScreen() {
       {/* Stats grid */}
       <Text style={styles.sectionTitle}>Aktivitas Hari Ini</Text>
       <View style={styles.statsGrid}>
-        <StatCard
-          label="Barang Masuk"
-          value={formatCompact(stats?.itemMasukHariIni ?? 0)}
-          sub={formatRupiah(stats?.nilaiMasukHariIni ?? 0)}
-          icon="arrow-down-circle-outline"
-          color={Colors.success.DEFAULT}
-          bgColor={Colors.success.bg}
-          style={styles.statCard}
-        />
-        <StatCard
-          label="Barang Keluar"
-          value={formatCompact(stats?.itemKeluarHariIni ?? 0)}
-          sub={formatRupiah(stats?.nilaiKeluarHariIni ?? 0)}
-          icon="arrow-up-circle-outline"
-          color={Colors.danger.DEFAULT}
-          bgColor={Colors.danger.bg}
-          style={styles.statCard}
-        />
+        <TouchableOpacity style={{ flex: 1 }} onPress={() => router.push({ pathname: '/(main)/history', params: { filter: 'masuk', today: '1' } })} activeOpacity={0.8}>
+          <StatCard
+            label="Barang Masuk"
+            value={formatCompact(stats?.itemMasukHariIni ?? 0)}
+            sub={formatRupiah(stats?.nilaiMasukHariIni ?? 0)}
+            icon="arrow-down-circle-outline"
+            color={Colors.success.DEFAULT}
+            bgColor={Colors.success.bg}
+            style={styles.statCard}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={{ flex: 1 }} onPress={() => router.push({ pathname: '/(main)/history', params: { filter: 'keluar', today: '1' } })} activeOpacity={0.8}>
+          <StatCard
+            label="Barang Keluar"
+            value={formatCompact(stats?.itemKeluarHariIni ?? 0)}
+            sub={formatRupiah(stats?.nilaiKeluarHariIni ?? 0)}
+            icon="arrow-up-circle-outline"
+            color={Colors.danger.DEFAULT}
+            bgColor={Colors.danger.bg}
+            style={styles.statCard}
+          />
+        </TouchableOpacity>
       </View>
       <View style={styles.statsGrid}>
         <StatCard
@@ -171,7 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 20,
   },
-  greeting: { fontSize: Typography.size.sm, color: Colors.text.muted },
+  greeting: { fontSize: Typography.size.sm, color: Colors.text.muted, marginTop: 4 },
   headerTitle: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: Colors.text.primary },
   settingsBtn: {
     width: 44,

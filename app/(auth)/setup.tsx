@@ -11,17 +11,19 @@ import {
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
-import { setPassword, session } from '@/lib/auth';
+import { setPassword, session, setUserName } from '@/lib/auth';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 const DIGITS = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
 
 export default function SetupScreen() {
   const db = useSQLiteContext();
-  const [step, setStep] = useState<'create' | 'confirm'>('create');
+  const [step, setStep] = useState<'name' | 'create' | 'confirm'>('name');
+  const [userName, setUserNameInput] = useState('');
   const [pin, setPin] = useState<string[]>([]);
   const [firstPin, setFirstPin] = useState('');
   const [error, setError] = useState('');
@@ -38,7 +40,7 @@ export default function SetupScreen() {
         setFirstPin(newPin.join(''));
         setPin([]);
         setStep('confirm');
-      } else {
+      } else if (step === 'confirm') {
         const confirmed = newPin.join('');
         if (confirmed !== firstPin) {
           setError('PIN tidak cocok. Ulangi.');
@@ -47,6 +49,7 @@ export default function SetupScreen() {
           setFirstPin('');
         } else {
           setLoading(true);
+          if (userName.trim()) await setUserName(db, userName.trim());
           await setPassword(db, confirmed);
           session.isUnlocked = true;
           router.replace('/(main)');
@@ -62,8 +65,14 @@ export default function SetupScreen() {
 
   const handleSkip = async () => {
     // Skip password: go to main without setup
+    setLoading(true);
+    if (userName.trim()) await setUserName(db, userName.trim());
     session.isUnlocked = true;
     router.replace('/(main)');
+  };
+
+  const submitName = () => {
+    setStep('create');
   };
 
   return (
@@ -79,59 +88,79 @@ export default function SetupScreen() {
 
         {/* Setup card */}
         <View style={styles.card}>
-          <View style={styles.stepIndicator}>
-            <View style={[styles.stepDot, step === 'create' ? styles.stepDotActive : styles.stepDotDone]}>
-              {step !== 'create' ? <Ionicons name="checkmark" size={12} color="#fff" /> : <Text style={styles.stepNum}>1</Text>}
-            </View>
-            <View style={styles.stepLine} />
-            <View style={[styles.stepDot, step === 'confirm' && styles.stepDotActive]}>
-              <Text style={[styles.stepNum, step === 'confirm' && styles.stepNumActive]}>2</Text>
-            </View>
-          </View>
-
-          <Text style={styles.title}>
-            {step === 'create' ? 'Buat PIN Keamanan' : 'Konfirmasi PIN'}
-          </Text>
-          <Text style={styles.subtitle}>
-            {step === 'create'
-              ? 'PIN 6 digit untuk melindungi data inventori Anda'
-              : 'Masukkan PIN yang sama untuk konfirmasi'}
-          </Text>
-
-          {/* PIN dots */}
-          <View style={styles.dotsRow}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <View
-                key={i}
-                style={[styles.dot, i < pin.length && styles.dotFilled, !!error && styles.dotError]}
+          {step === 'name' ? (
+            <>
+              <Text style={styles.title}>Selamat Datang!</Text>
+              <Text style={[styles.subtitle, { paddingBottom: 16 }]}>Atur nama pengguna untuk personalisasi aplikasi.</Text>
+              <Input
+                placeholder="Siapa nama Anda?"
+                value={userName}
+                onChangeText={setUserNameInput}
+                autoFocus
               />
-            ))}
-          </View>
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              <Button label="Lanjut" onPress={submitName} fullWidth style={{ marginTop: 10 }} />
+            </>
+          ) : (
+            <>
+              <View style={styles.stepIndicator}>
+                <View style={[styles.stepDot, step === 'create' ? styles.stepDotActive : styles.stepDotDone]}>
+                  {step !== 'create' ? <Ionicons name="checkmark" size={12} color="#fff" /> : <Text style={styles.stepNum}>1</Text>}
+                </View>
+                <View style={styles.stepLine} />
+                <View style={[styles.stepDot, step === 'confirm' && styles.stepDotActive]}>
+                  <Text style={[styles.stepNum, step === 'confirm' && styles.stepNumActive]}>2</Text>
+                </View>
+              </View>
+
+              <Text style={styles.title}>
+                {step === 'create' ? 'Buat PIN Keamanan' : 'Konfirmasi PIN'}
+              </Text>
+              <Text style={styles.subtitle}>
+                {step === 'create'
+                  ? 'PIN 6 digit untuk melindungi data inventori Anda'
+                  : 'Masukkan PIN yang sama untuk konfirmasi'}
+              </Text>
+
+              {/* PIN dots */}
+              <View style={styles.dotsRow}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <View
+                    key={i}
+                    style={[styles.dot, i < pin.length && styles.dotFilled, !!error && styles.dotError]}
+                  />
+                ))}
+              </View>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            </>
+          )}
         </View>
 
         {/* Numpad */}
-        <View style={styles.numpad}>
-          {DIGITS.map((d, i) => {
-            if (d === '') return <View key={i} style={styles.numKey} />;
-            if (d === '⌫') {
-              return (
-                <TouchableOpacity key={i} style={styles.numKey} onPress={handleBackspace} activeOpacity={0.6}>
-                  <Ionicons name="backspace-outline" size={24} color={Colors.text.secondary} />
-                </TouchableOpacity>
-              );
-            }
-            return (
-              <TouchableOpacity key={i} style={styles.numKey} onPress={() => handleDigit(d)} activeOpacity={0.6}>
-                <Text style={styles.numText}>{d}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        {step !== 'name' && (
+          <>
+            <View style={styles.numpad}>
+              {DIGITS.map((d, i) => {
+                if (d === '') return <View key={i} style={styles.numKey} />;
+                if (d === '⌫') {
+                  return (
+                    <TouchableOpacity key={i} style={styles.numKey} onPress={handleBackspace} activeOpacity={0.6}>
+                      <Ionicons name="backspace-outline" size={24} color={Colors.text.secondary} />
+                    </TouchableOpacity>
+                  );
+                }
+                return (
+                  <TouchableOpacity key={i} style={styles.numKey} onPress={() => handleDigit(d)} activeOpacity={0.6}>
+                    <Text style={styles.numText}>{d}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-        <TouchableOpacity onPress={handleSkip} style={styles.skipBtn}>
-          <Text style={styles.skipText}>Lewati, tidak perlu PIN</Text>
-        </TouchableOpacity>
+            <TouchableOpacity onPress={handleSkip} style={styles.skipBtn} disabled={loading}>
+              <Text style={styles.skipText}>Lewati, tidak perlu PIN</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   Platform,
   FlatList,
+  RefreshControl,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,9 +41,11 @@ export default function LaporanScreen() {
   const [showStart, setShowStart] = useState(false);
   const [showEnd, setShowEnd] = useState(false);
 
-  useEffect(() => {
-    loadReport();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadReport();
+    }, [loadReport])
+  );
 
   const handleApply = () => {
     applyFilter({
@@ -62,6 +66,7 @@ export default function LaporanScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       stickyHeaderIndices={[0]}
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadReport} tintColor={Colors.primary.DEFAULT} />}
     >
       {/* Sticky header */}
       <View style={styles.header}>

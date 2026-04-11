@@ -1,5 +1,7 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
+import { saveToSafDirectory } from '@/lib/utils/storage';
 import { type Transaction, type ReportFilter } from '@/types';
 import { formatDate, formatDateTime } from '@/lib/utils/date';
 import { formatRupiah } from '@/lib/utils/currency';
@@ -122,6 +124,20 @@ export async function generateAndSharePdf(
 ): Promise<void> {
   const html = buildHtml(transactions, filter);
   const { uri } = await Print.printToFileAsync({ html, base64: false });
+  
+  if (Platform.OS === 'android') {
+    const filename = `Laporan_${filter.type}_${formatDate(filter.startDate, 'yyyyMMdd')}.pdf`;
+    try {
+      await saveToSafDirectory(uri, filename, 'application/pdf');
+      return;
+    } catch (e: any) {
+      if (e.message && e.message.includes('No SAF directory selected')) {
+        return; // User cancelled
+      }
+      // Continue to sharing fallback
+    }
+  }
+
   await Sharing.shareAsync(uri, {
     mimeType: 'application/pdf',
     dialogTitle: 'Bagikan Laporan PDF',

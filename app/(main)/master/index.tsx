@@ -8,7 +8,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { RefreshControl } from 'react-native';
 import { useItems } from '@/hooks/useItems';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
@@ -27,10 +29,16 @@ export default function MasterIndexScreen() {
   const [query, setQuery] = useState('');
   const [selectedKategori, setSelectedKategori] = useState<string>('Semua');
 
-  useEffect(() => {
-    loadItems();
+  const fetchAll = useCallback(() => {
+    loadItems(query, selectedKategori === 'Semua' ? undefined : selectedKategori);
     loadCategories();
-  }, []);
+  }, [loadItems, loadCategories, query, selectedKategori]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchAll();
+    }, [fetchAll])
+  );
 
   const handleSearch = (q: string) => {
     setQuery(q);
@@ -65,11 +73,12 @@ export default function MasterIndexScreen() {
       </View>
 
       {/* Category filter */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
+      <View style={styles.filterContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
         {allCategories.map((k) => (
           <TouchableOpacity
             key={k}
@@ -81,9 +90,10 @@ export default function MasterIndexScreen() {
             </Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+        </ScrollView>
+      </View>
 
-      {isLoading ? (
+      {isLoading && items.length === 0 ? (
         <LoadingSpinner label="Memuat barang..." />
       ) : (
         <FlatList
@@ -112,6 +122,7 @@ export default function MasterIndexScreen() {
             />
           }
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={fetchAll} tintColor={Colors.primary.DEFAULT} />}
         />
       )}
 
@@ -129,6 +140,7 @@ export default function MasterIndexScreen() {
 
 const styles = StyleSheet.create({
   searchRow: { paddingHorizontal: Spacing.screenPadding, paddingTop: 12 },
+  filterContainer: { height: 56, marginBottom: 8 },
   filterRow: {
     paddingHorizontal: Spacing.screenPadding,
     paddingVertical: 12,

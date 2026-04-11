@@ -8,6 +8,8 @@ import {
   Platform,
   RefreshControl,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,7 +31,9 @@ const TYPE_FILTERS: { label: string; value: ReportType | 'all' }[] = [
 
 export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ filter?: string; today?: string }>();
   const { transactions, isLoading, loadTransactions, deleteMasuk, deleteKeluar } = useTransactions();
+  
   const [typeFilter, setTypeFilter] = useState<ReportType | 'all'>('all');
   const [startDate, setStartDate] = useState<Date>(() => {
     const d = new Date();
@@ -37,6 +41,18 @@ export default function HistoryScreen() {
     return d;
   });
   const [endDate, setEndDate] = useState<Date>(new Date());
+  
+  // Set filters from params if present
+  useEffect(() => {
+    if (params.filter && ['masuk', 'keluar'].includes(params.filter)) {
+      setTypeFilter(params.filter as ReportType);
+    }
+    if (params.today === '1') {
+      setStartDate(new Date());
+      setEndDate(new Date());
+    }
+  }, [params.filter, params.today]);
+
   const [showStart, setShowStart] = useState(false);
   const [showEnd, setShowEnd] = useState(false);
 
@@ -48,7 +64,11 @@ export default function HistoryScreen() {
     });
   }, [loadTransactions, typeFilter, startDate, endDate]);
 
-  useEffect(() => { load(); }, [typeFilter, startDate, endDate]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   const handleDelete = async (t: Transaction) => {
     if (t.type === 'masuk') await deleteMasuk(t.id);

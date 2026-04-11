@@ -57,6 +57,7 @@ export function useReports() {
     setIsGenerating(true);
     try {
       await generateAndSharePdf(transactions, filter);
+      Alert.alert('Berhasil', 'Laporan PDF berhasil diunduh.');
     } catch (e) {
       Alert.alert('Error', 'Gagal membuat laporan PDF.');
     } finally {
@@ -72,6 +73,7 @@ export function useReports() {
     setIsGenerating(true);
     try {
       await generateAndShareExcel(transactions, filter);
+      Alert.alert('Berhasil', 'Laporan Excel berhasil diunduh.');
     } catch (e) {
       Alert.alert('Error', 'Gagal membuat laporan Excel.');
     } finally {

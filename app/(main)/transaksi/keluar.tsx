@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTransactions } from '@/hooks/useTransactions';
@@ -43,6 +44,26 @@ export default function KeluarScreen() {
     catatan: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const resetForm = useCallback(() => {
+    setSelectedItem(null);
+    setForm({
+      jumlah: '',
+      harga_jual: '',
+      pelanggan: '',
+      no_transaksi: generateTrxCode('OUT'),
+      tanggal: new Date(),
+      catatan: '',
+    });
+    setErrors({});
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Clear params item_id effect if we navigate back normally
+      return () => {};
+    }, [])
+  );
 
   useEffect(() => {
     if (params.item_id) {
@@ -86,7 +107,7 @@ export default function KeluarScreen() {
         catatan: form.catatan || undefined,
       });
       Alert.alert('Berhasil', `${form.jumlah} ${selectedItem.satuan} "${selectedItem.nama}" berhasil dicatat keluar.`, [
-        { text: 'OK', onPress: () => router.back() },
+        { text: 'OK', onPress: () => { router.back(); setTimeout(resetForm, 300); } },
       ]);
     } catch {
       Alert.alert('Error', 'Gagal mencatat transaksi keluar.');

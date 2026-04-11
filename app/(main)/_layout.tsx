@@ -8,9 +8,11 @@ import { Colors } from '@/constants/Colors';
 import { Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MainLayout() {
   const db = useSQLiteContext();
+  const insets = useSafeAreaInsets();
   const [authChecked, setAuthChecked] = useState(false);
   const [requiresLogin, setRequiresLogin] = useState(false);
 
@@ -31,7 +33,13 @@ export default function MainLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: Spacing.tabBarHeight + insets.bottom,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+          },
+        ],
         tabBarActiveTintColor: Colors.tab.active,
         tabBarInactiveTintColor: Colors.tab.inactive,
         tabBarLabelStyle: styles.tabLabel,
@@ -96,8 +104,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.tab.bg,
     borderTopWidth: 1,
     borderTopColor: Colors.tab.border,
-    height: Platform.OS === 'ios' ? Spacing.tabBarHeight + 20 : Spacing.tabBarHeight,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 8,
     paddingTop: 8,
     elevation: 0,
     shadowOpacity: 0,

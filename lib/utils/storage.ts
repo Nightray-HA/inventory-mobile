@@ -1,6 +1,9 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 const IMAGES_DIR = FileSystem.documentDirectory + 'item_images/';
+const SAF_DIR_KEY = 'inventory_app_saf_dir';
 
 /**
  * Ensure the item images directory exists
@@ -56,4 +59,56 @@ export async function saveBase64File(
     encoding: FileSystem.EncodingType.Base64,
   });
   return uri;
+}
+
+// ─── SAF Document Storage ──────────────────────────────────────────────────
+
+export async function getSavedSafDirectory(): Promise<string | null> {
+  return await SecureStore.getItemAsync(SAF_DIR_KEY);
+}
+
+export async function setSavedSafDirectory(uri: string): Promise<void> {
+  await SecureStore.setItemAsync(SAF_DIR_KEY, uri);
+}
+
+export async function clearSavedSafDirectory(): Promise<void> {
+  await SecureStore.deleteItemAsync(SAF_DIR_KEY);
+}
+
+/**
+ * Prompt user to select a folder on Android using SAF
+ */
+export async function promptSafDirectory(): Promise<string | null> {
+  if (Platform.OS !== 'android') return null;
+  const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+  if (permissions.granted) {
+    await setSavedSafDirectory(permissions.directoryUri);
+    return permissions.directoryUri;
+  }
+  return null;
+}
+
+/**
+ * Saves a file from tempUri to the granted SAF directory.
+ */
+export async function saveToSafDirectory(tempUri: string, filename: string, mimeType: string): Promise<string> {
+  let dirUri = await getSavedSafDirectory();
+  if (!dirUri && Platform.OS === 'android') {
+    dirUri = await promptSafDirectory();
+  }
+
+  if (dirUri && Platform.OS === 'android') {
+    try {
+      const base64 = await FileSystem.readAsStringAsync(tempUri, { encoding: FileSystem.EncodingType.Base64 });
+      const destUri = await FileSystem.StorageAccessFramework.createFileAsync(dirUri, filename, mimeType);
+      await FileSystem.writeAsStringAsync(destUri, base64, { encoding: FileSystem.EncodingType.Base64 });
+      return destUri;
+    } catch (e: any) {
+      if (e.message && e.message.includes('permission')) {
+        await clearSavedSafDirectory(); // Permissions might be revoked
+      }
+      throw e;
+    }
+  }
+  throw new Error("No SAF directory selected");
 }

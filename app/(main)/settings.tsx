@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isPasswordSet, changePassword, setPassword, removePassword } from '@/lib/auth';
+import { isPasswordSet, changePassword, setPassword, removePassword, getUserName, setUserName } from '@/lib/auth';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -59,11 +59,32 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [showChangePin, setShowChangePin] = useState(false);
   const [showSetPin, setShowSetPin] = useState(false);
+  const [showChangeName, setShowChangeName] = useState(false);
+  
+  const [displayUserName, setDisplayUserName] = useState('');
+  const [inputUserName, setInputUserName] = useState('');
+  
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [pinSaving, setPinSaving] = useState(false);
   const [pinError, setPinError] = useState('');
+
+  React.useEffect(() => {
+    (async () => {
+      const name = await getUserName(db);
+      setDisplayUserName(name);
+    })();
+  }, [db]);
+
+  const handleSaveName = async () => {
+    setPinSaving(true);
+    await setUserName(db, inputUserName.trim());
+    setDisplayUserName(inputUserName.trim());
+    setShowChangeName(false);
+    setPinSaving(false);
+    Alert.alert('Berhasil', 'Nama pengguna berhasil diperbarui.');
+  };
 
   const handleChangePin = async () => {
     if (newPin.length < 4) { setPinError('PIN minimal 4 digit'); return; }
@@ -121,6 +142,19 @@ export default function SettingsScreen() {
             <Text style={styles.appName}>Inventori</Text>
             <Text style={styles.appVersion}>Versi 1.0.0 • Penyimpanan lokal</Text>
           </View>
+        </View>
+
+        {/* Profil */}
+        <Text style={styles.groupLabel}>Profil</Text>
+        <View style={styles.group}>
+          <SettingsRow
+            icon="person-outline"
+            label="Nama Pengguna"
+            sublabel={displayUserName || 'Belum diatur'}
+            iconBg={Colors.info.bg}
+            iconColor={Colors.info.DEFAULT}
+            onPress={() => { setInputUserName(displayUserName); setShowChangeName(true); }}
+          />
         </View>
 
         {/* Security */}
@@ -212,6 +246,14 @@ export default function SettingsScreen() {
           <Input label="PIN Baru (min. 4 digit)" value={newPin} onChangeText={setNewPin} secureTextEntry keyboardType="numeric" placeholder="••••••" maxLength={6} />
           <Input label="Konfirmasi PIN" value={confirmPin} onChangeText={setConfirmPin} secureTextEntry keyboardType="numeric" placeholder="••••••" maxLength={6} error={pinError} />
           <Button label="Pasang PIN" onPress={handleSetPin} loading={pinSaving} fullWidth />
+        </View>
+      </Modal>
+
+      {/* Change Name Modal */}
+      <Modal visible={showChangeName} onClose={() => setShowChangeName(false)} title="Ubah Nama">
+        <View style={styles.pinForm}>
+          <Input label="Nama Pengguna" value={inputUserName} onChangeText={setInputUserName} placeholder="Masukkan nama Anda" />
+          <Button label="Simpan Nama" onPress={handleSaveName} loading={pinSaving} fullWidth />
         </View>
       </Modal>
     </View>
