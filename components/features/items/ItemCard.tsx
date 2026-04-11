@@ -10,11 +10,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { type Item } from '@/types';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
-import { formatRupiah, formatQty } from '@/lib/utils/currency';
 import { Badge } from '@/components/ui/Badge';
+import { formatQty } from '@/lib/utils/currency';
+import { formatRupiah } from '@/lib/utils/currency';
 
 interface ItemCardProps {
   item: Item;
@@ -22,6 +25,8 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, onDelete }: ItemCardProps) {
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const isLowStock = item.stok_saat_ini <= item.stok_minimum;
   const isOutOfStock = item.stok_saat_ini === 0;
 
@@ -54,7 +59,7 @@ export function ItemCard({ item, onDelete }: ItemCardProps) {
           <Image source={{ uri: item.image_uri }} style={styles.image} resizeMode="cover" />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Ionicons name="cube-outline" size={28} color={Colors.text.muted} />
+            <Ionicons name="cube-outline" size={28} color={colors.text.muted} />
           </View>
         )}
         <Badge
@@ -96,25 +101,25 @@ export function ItemCard({ item, onDelete }: ItemCardProps) {
       {/* Actions */}
       {onDelete && (
         <TouchableOpacity onPress={handleDelete} style={styles.deleteBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="trash-outline" size={18} color={Colors.danger.DEFAULT} />
+          <Ionicons name="trash-outline" size={18} color={colors.danger.DEFAULT} />
         </TouchableOpacity>
       )}
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
-    backgroundColor: Colors.bg.surface,
+    backgroundColor: colors.bg.surface,
     borderRadius: Spacing.radius.lg,
     borderWidth: 1,
-    borderColor: Colors.border.subtle,
+    borderColor: colors.border.subtle,
     overflow: 'hidden',
     marginBottom: 12,
   },
   imageContainer: {
     height: 120,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
   },
   image: {
     width: '100%',
@@ -142,21 +147,21 @@ const styles = StyleSheet.create({
   },
   kode: {
     fontSize: Typography.size.xs,
-    color: Colors.text.muted,
+    color: colors.text.muted,
     letterSpacing: Typography.letterSpacing.wide,
     fontWeight: Typography.weight.medium,
   },
   nama: {
     fontSize: Typography.size.base,
     fontWeight: Typography.weight.semibold,
-    color: Colors.text.primary,
+    color: colors.text.primary,
     lineHeight: Typography.size.base * 1.4,
   },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     borderRadius: Spacing.radius.sm,
     padding: 8,
   },
@@ -167,19 +172,19 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 10,
-    color: Colors.text.muted,
+    color: colors.text.muted,
     letterSpacing: 0.3,
   },
   statValue: {
     fontSize: Typography.size.sm,
     fontWeight: Typography.weight.semibold,
-    color: Colors.text.primary,
+    color: colors.text.primary,
   },
-  statLow: { color: Colors.warning.DEFAULT },
+  statLow: { color: colors.warning.DEFAULT },
   statDivider: {
     width: 1,
     height: 28,
-    backgroundColor: Colors.border.subtle,
+    backgroundColor: colors.border.subtle,
   },
   deleteBtn: {
     position: 'absolute',
@@ -188,7 +193,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.danger.bg,
+    backgroundColor: colors.danger.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },

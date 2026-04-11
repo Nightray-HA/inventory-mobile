@@ -11,13 +11,15 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { TransactionCard } from '@/components/features/transactions/TransactionCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { toDbDate, formatDate, today } from '@/lib/utils/date';
@@ -31,6 +33,8 @@ const TYPE_FILTERS: { label: string; value: ReportType | 'all' }[] = [
 
 export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const params = useLocalSearchParams<{ filter?: string; today?: string }>();
   const { transactions, isLoading, loadTransactions, deleteMasuk, deleteKeluar } = useTransactions();
   
@@ -87,12 +91,12 @@ export default function HistoryScreen() {
       {/* Date filter */}
       <View style={styles.dateRow}>
         <TouchableOpacity style={styles.dateBtn} onPress={() => setShowStart(true)}>
-          <Ionicons name="calendar-outline" size={14} color={Colors.text.muted} />
+          <Ionicons name="calendar-outline" size={14} color={colors.text.muted} />
           <Text style={styles.dateBtnText}>{formatDate(toDbDate(startDate), 'dd MMM yy')}</Text>
         </TouchableOpacity>
         <Text style={styles.dateSep}>—</Text>
         <TouchableOpacity style={styles.dateBtn} onPress={() => setShowEnd(true)}>
-          <Ionicons name="calendar-outline" size={14} color={Colors.text.muted} />
+          <Ionicons name="calendar-outline" size={14} color={colors.text.muted} />
           <Text style={styles.dateBtnText}>{formatDate(toDbDate(endDate), 'dd MMM yy')}</Text>
         </TouchableOpacity>
         {/* Type filter chips */}
@@ -142,7 +146,15 @@ export default function HistoryScreen() {
           )}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} tintColor={Colors.primary.DEFAULT} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={load}
+              tintColor={colors.primary.DEFAULT}
+              colors={[colors.primary.DEFAULT]}
+              progressBackgroundColor={colors.bg.surface}
+            />
+          }
           ListEmptyComponent={
             <EmptyState
               icon="time-outline"
@@ -156,8 +168,8 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg.primary },
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.primary },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -166,11 +178,11 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 12,
   },
-  title: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  title: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text.primary },
   count: {
     fontSize: Typography.size.sm,
-    color: Colors.primary.light,
-    backgroundColor: Colors.primary.bg,
+    color: colors.primary.light,
+    backgroundColor: colors.primary.bg,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: Spacing.radius.full,
@@ -188,26 +200,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: Spacing.radius.md,
     borderWidth: 1,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
   },
-  dateBtnText: { fontSize: Typography.size.sm, color: Colors.text.secondary },
-  dateSep: { color: Colors.text.muted },
+  dateBtnText: { fontSize: Typography.size.sm, color: colors.text.secondary },
+  dateSep: { color: colors.text.muted },
   typeChips: { flexDirection: 'row', gap: 6, marginLeft: 'auto' },
   chip: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: Spacing.radius.full,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     borderWidth: 1,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
   },
-  chipActive: { backgroundColor: Colors.primary.DEFAULT, borderColor: Colors.primary.DEFAULT },
-  chipText: { fontSize: Typography.size.xs, color: Colors.text.secondary, fontWeight: Typography.weight.medium },
-  chipTextActive: { color: Colors.white },
+  chipActive: { backgroundColor: colors.primary.DEFAULT, borderColor: colors.primary.DEFAULT },
+  chipText: { fontSize: Typography.size.xs, color: colors.text.secondary, fontWeight: Typography.weight.medium },
+  chipTextActive: { color: colors.white },
   listContent: { paddingHorizontal: Spacing.screenPadding, paddingBottom: 100 },
 });

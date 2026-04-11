@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { Modal } from './Modal';
@@ -22,6 +24,8 @@ interface SelectProps {
 }
 
 export function Select({ label, value, options, onSelect, placeholder = 'Pilih...', error, style }: SelectProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [open, setOpen] = useState(false);
   const selected = options.find((o) => o.value === value);
 
@@ -36,7 +40,7 @@ export function Select({ label, value, options, onSelect, placeholder = 'Pilih..
         <Text style={[styles.triggerText, !selected && styles.triggerPlaceholder]}>
           {selected?.label ?? placeholder}
         </Text>
-        <Ionicons name="chevron-down" size={18} color={Colors.text.muted} />
+        <Ionicons name="chevron-down" size={18} color={colors.text.muted} />
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
 
@@ -58,7 +62,7 @@ export function Select({ label, value, options, onSelect, placeholder = 'Pilih..
                 <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
                   {item.label}
                 </Text>
-                {isSelected && <Ionicons name="checkmark" size={18} color={Colors.primary.DEFAULT} />}
+                {isSelected && <Ionicons name="checkmark" size={18} color={colors.primary.DEFAULT} />}
               </TouchableOpacity>
             );
           }}
@@ -69,29 +73,29 @@ export function Select({ label, value, options, onSelect, placeholder = 'Pilih..
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   wrapper: { gap: 6 },
   label: {
     fontSize: Typography.size.sm,
     fontWeight: Typography.weight.medium,
-    color: Colors.text.secondary,
+    color: colors.text.secondary,
     letterSpacing: Typography.letterSpacing.wide,
   },
   trigger: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.bg.input,
+    backgroundColor: colors.bg.input,
     borderRadius: Spacing.radius.md,
     borderWidth: 1.5,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
     height: Spacing.inputHeight,
     paddingHorizontal: 14,
   },
-  triggerError: { borderColor: Colors.danger.DEFAULT },
-  triggerText: { fontSize: Typography.size.base, color: Colors.text.primary },
-  triggerPlaceholder: { color: Colors.text.muted },
-  errorText: { fontSize: Typography.size.xs, color: Colors.danger.DEFAULT },
+  triggerError: { borderColor: colors.danger.DEFAULT },
+  triggerText: { fontSize: Typography.size.base, color: colors.text.primary },
+  triggerPlaceholder: { color: colors.text.muted },
+  errorText: { fontSize: Typography.size.xs, color: colors.danger.DEFAULT },
   list: { maxHeight: 350 },
   option: {
     flexDirection: 'row',
@@ -101,8 +105,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderRadius: Spacing.radius.md,
   },
-  optionSelected: { backgroundColor: Colors.primary.bg },
-  optionText: { fontSize: Typography.size.base, color: Colors.text.secondary },
-  optionTextSelected: { color: Colors.primary.light, fontWeight: Typography.weight.semibold },
-  separator: { height: 1, backgroundColor: Colors.border.subtle },
+  optionSelected: { backgroundColor: colors.primary.bg },
+  optionText: { fontSize: Typography.size.base, color: colors.text.secondary },
+  optionTextSelected: { color: colors.primary.light, fontWeight: Typography.weight.semibold },
+  separator: { height: 1, backgroundColor: colors.border.subtle },
 });

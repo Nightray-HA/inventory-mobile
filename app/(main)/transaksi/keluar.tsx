@@ -15,12 +15,14 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useItems } from '@/hooks/useItems';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ItemSelectorModal } from '@/components/features/items/ItemSelectorModal';
-import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { toDbDate, formatDate } from '@/lib/utils/date';
@@ -29,6 +31,8 @@ import { type Item } from '@/types';
 
 export default function KeluarScreen() {
   const params = useLocalSearchParams<{ item_id?: string }>();
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const { addKeluar } = useTransactions();
   const { fetchItem } = useItems();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -120,7 +124,7 @@ export default function KeluarScreen() {
   const stockDanger = stockAfter < (selectedItem?.stok_minimum ?? 0);
 
   return (
-    <ScreenWrapper padded={false}>
+    <ScreenWrapper padded={false} style={styles.screen}>
       <AppHeader title="Barang Keluar" showBack />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -133,15 +137,15 @@ export default function KeluarScreen() {
                   <View style={styles.selectedItemInfo}>
                     <Text style={styles.selectedItemKode}>{selectedItem.kode}</Text>
                     <Text style={styles.selectedItemNama}>{selectedItem.nama}</Text>
-                    <Text style={[styles.selectedItemStok, selectedItem.stok_saat_ini === 0 && { color: Colors.danger.DEFAULT }]}>
+                    <Text style={[styles.selectedItemStok, selectedItem.stok_saat_ini === 0 && { color: colors.danger.DEFAULT }]}>
                       Stok tersedia: {selectedItem.stok_saat_ini} {selectedItem.satuan}
                     </Text>
                   </View>
-                  <Ionicons name="create-outline" size={18} color={Colors.primary.DEFAULT} />
+                  <Ionicons name="create-outline" size={18} color={colors.primary.DEFAULT} />
                 </View>
               ) : (
                 <View style={styles.selectorPlaceholder}>
-                  <Ionicons name="search" size={18} color={Colors.text.muted} />
+                  <Ionicons name="search" size={18} color={colors.text.muted} />
                   <Text style={styles.selectorPlaceholderText}>Pilih barang...</Text>
                 </View>
               )}
@@ -192,9 +196,9 @@ export default function KeluarScreen() {
             <View style={styles.dateWrapper}>
               <Text style={styles.dateLabel}>Tanggal Keluar</Text>
               <TouchableOpacity style={styles.dateBtn} onPress={() => setShowDatePicker(true)}>
-                <Ionicons name="calendar-outline" size={18} color={Colors.danger.light} />
+                <Ionicons name="calendar-outline" size={18} color={colors.danger.light} />
                 <Text style={styles.dateBtnText}>{formatDate(toDbDate(form.tanggal), 'EEEE, dd MMMM yyyy')}</Text>
-                <Ionicons name="chevron-down" size={16} color={Colors.text.muted} />
+                <Ionicons name="chevron-down" size={16} color={colors.text.muted} />
               </TouchableOpacity>
             </View>
             {showDatePicker && (
@@ -225,7 +229,7 @@ export default function KeluarScreen() {
 
           {selectedItem && form.jumlah && parseInt(form.jumlah) > 0 && (
             <View style={[styles.summary, stockDanger && styles.summaryDanger]}>
-              <Text style={[styles.summaryTitle, { color: stockDanger ? Colors.warning.DEFAULT : Colors.danger.DEFAULT }]}>
+              <Text style={[styles.summaryTitle, { color: stockDanger ? colors.warning.DEFAULT : colors.danger.DEFAULT }]}>
                 Ringkasan
               </Text>
               <View style={styles.summaryRow}>
@@ -236,7 +240,7 @@ export default function KeluarScreen() {
               </View>
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Stok setelah keluar</Text>
-                <Text style={[styles.summaryValue, { color: stockDanger ? Colors.warning.DEFAULT : Colors.text.primary }]}>
+                <Text style={[styles.summaryValue, { color: stockDanger ? colors.warning.DEFAULT : colors.text.primary }]}>
                   {stockAfter} {selectedItem.satuan}
                   {stockDanger ? ' ⚠️ Kritis' : ''}
                 </Text>
@@ -251,7 +255,7 @@ export default function KeluarScreen() {
               variant="danger"
               onPress={handleSave}
               loading={loading}
-              icon={<Ionicons name="checkmark-circle-outline" size={18} color={Colors.white} />}
+              icon={<Ionicons name="checkmark-circle-outline" size={18} color={colors.white} />}
               style={{ flex: 2 }}
             />
           </View>
@@ -273,29 +277,30 @@ export default function KeluarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  screen: { backgroundColor: colors.bg.primary },
   content: { paddingHorizontal: Spacing.screenPadding, paddingTop: Spacing.md },
   section: { gap: 14, marginBottom: Spacing.sectionGap },
-  sectionTitle: { fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold, color: Colors.text.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
-  selectorBtn: { backgroundColor: Colors.bg.input, borderRadius: Spacing.radius.md, borderWidth: 1.5, borderColor: Colors.border.default, minHeight: Spacing.inputHeight, justifyContent: 'center', paddingHorizontal: 14 },
-  selectorBtnError: { borderColor: Colors.danger.DEFAULT },
+  sectionTitle: { fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold, color: colors.text.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
+  selectorBtn: { backgroundColor: colors.bg.input, borderRadius: Spacing.radius.md, borderWidth: 1.5, borderColor: colors.border.default, minHeight: Spacing.inputHeight, justifyContent: 'center', paddingHorizontal: 14 },
+  selectorBtnError: { borderColor: colors.danger.DEFAULT },
   selectorPlaceholder: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  selectorPlaceholderText: { fontSize: Typography.size.base, color: Colors.text.muted },
+  selectorPlaceholderText: { fontSize: Typography.size.base, color: colors.text.muted },
   selectedItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   selectedItemInfo: { flex: 1, gap: 2 },
-  selectedItemKode: { fontSize: 11, color: Colors.text.muted },
-  selectedItemNama: { fontSize: Typography.size.base, fontWeight: Typography.weight.semibold, color: Colors.text.primary },
-  selectedItemStok: { fontSize: Typography.size.xs, color: Colors.success.DEFAULT },
-  errorText: { fontSize: Typography.size.xs, color: Colors.danger.DEFAULT },
+  selectedItemKode: { fontSize: 11, color: colors.text.muted },
+  selectedItemNama: { fontSize: Typography.size.base, fontWeight: Typography.weight.semibold, color: colors.text.primary },
+  selectedItemStok: { fontSize: Typography.size.xs, color: colors.success.DEFAULT },
+  errorText: { fontSize: Typography.size.xs, color: colors.danger.DEFAULT },
   dateWrapper: { gap: 6 },
-  dateLabel: { fontSize: Typography.size.sm, fontWeight: Typography.weight.medium, color: Colors.text.secondary, letterSpacing: 0.5 },
-  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Colors.bg.input, borderRadius: Spacing.radius.md, borderWidth: 1.5, borderColor: Colors.border.default, height: Spacing.inputHeight, paddingHorizontal: 14 },
-  dateBtnText: { flex: 1, fontSize: Typography.size.base, color: Colors.text.primary },
-  summary: { backgroundColor: Colors.danger.bg, borderRadius: Spacing.radius.lg, borderWidth: 1, borderColor: Colors.danger.dark + '40', padding: 16, gap: 10, marginBottom: 24 },
-  summaryDanger: { borderColor: Colors.warning.dark + '40', backgroundColor: Colors.warning.bg },
+  dateLabel: { fontSize: Typography.size.sm, fontWeight: Typography.weight.medium, color: colors.text.secondary, letterSpacing: 0.5 },
+  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.bg.input, borderRadius: Spacing.radius.md, borderWidth: 1.5, borderColor: colors.border.default, height: Spacing.inputHeight, paddingHorizontal: 14 },
+  dateBtnText: { flex: 1, fontSize: Typography.size.base, color: colors.text.primary },
+  summary: { backgroundColor: colors.danger.bg, borderRadius: Spacing.radius.lg, borderWidth: 1, borderColor: colors.danger.dark + '40', padding: 16, gap: 10, marginBottom: 24 },
+  summaryDanger: { borderColor: colors.warning.dark + '40', backgroundColor: colors.warning.bg },
   summaryTitle: { fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  summaryLabel: { fontSize: Typography.size.sm, color: Colors.text.secondary },
-  summaryValue: { fontSize: Typography.size.base, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  summaryLabel: { fontSize: Typography.size.sm, color: colors.text.secondary },
+  summaryValue: { fontSize: Typography.size.base, fontWeight: Typography.weight.bold, color: colors.text.primary },
   btnRow: { flexDirection: 'row', gap: 12 },
 });

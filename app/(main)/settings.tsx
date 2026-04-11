@@ -17,17 +17,20 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Divider } from '@/components/ui/Divider';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme, type ThemeMode } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
+import { getSavedSafDirectory, promptSafDirectory, decodeSafUri } from '@/lib/utils/storage';
 
 function SettingsRow({
   icon,
   label,
   sublabel,
   onPress,
-  iconBg = Colors.bg.elevated,
-  iconColor = Colors.text.secondary,
+  iconBg,
+  iconColor,
   dangerous = false,
   right,
 }: {
@@ -40,16 +43,21 @@ function SettingsRow({
   dangerous?: boolean;
   right?: React.ReactNode;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
+  
+  const defaultIconBg = iconBg ?? colors.bg.elevated;
+  const defaultIconColor = iconColor ?? colors.text.secondary;
   return (
     <TouchableOpacity onPress={onPress} style={styles.settingsRow} activeOpacity={onPress ? 0.7 : 1}>
-      <View style={[styles.settingsIcon, { backgroundColor: iconBg }]}>
-        <Ionicons name={icon} size={20} color={iconColor} />
+      <View style={[styles.settingsIcon, { backgroundColor: defaultIconBg }]}>
+        <Ionicons name={icon} size={20} color={defaultIconColor} />
       </View>
       <View style={styles.settingsText}>
-        <Text style={[styles.settingsLabel, dangerous && { color: Colors.danger.DEFAULT }]}>{label}</Text>
+        <Text style={[styles.settingsLabel, dangerous && { color: colors.danger.DEFAULT }]}>{label}</Text>
         {sublabel && <Text style={styles.settingsSublabel}>{sublabel}</Text>}
       </View>
-      {right ?? (onPress && <Ionicons name="chevron-forward" size={16} color={Colors.text.muted} />)}
+      {right ?? (onPress && <Ionicons name="chevron-forward" size={16} color={colors.text.muted} />)}
     </TouchableOpacity>
   );
 }
@@ -57,6 +65,8 @@ function SettingsRow({
 export default function SettingsScreen() {
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
+  const { mode, setMode, colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [showChangePin, setShowChangePin] = useState(false);
   const [showSetPin, setShowSetPin] = useState(false);
   const [showChangeName, setShowChangeName] = useState(false);
@@ -69,11 +79,16 @@ export default function SettingsScreen() {
   const [confirmPin, setConfirmPin] = useState('');
   const [pinSaving, setPinSaving] = useState(false);
   const [pinError, setPinError] = useState('');
+  
+  const [storagePath, setStoragePath] = useState('');
 
   React.useEffect(() => {
     (async () => {
       const name = await getUserName(db);
       setDisplayUserName(name);
+      
+      const safDir = await getSavedSafDirectory();
+      setStoragePath(decodeSafUri(safDir));
     })();
   }, [db]);
 
@@ -122,12 +137,20 @@ export default function SettingsScreen() {
     ]);
   };
 
+  const handleChangeDirectory = async () => {
+    const uri = await promptSafDirectory();
+    if (uri) {
+      setStoragePath(decodeSafUri(uri));
+      Alert.alert('Berhasil', 'Direktori penyimpanan laporan telah diubah.');
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={Colors.text.primary} />
+          <Ionicons name="chevron-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.title}>Pengaturan</Text>
       </View>
@@ -136,11 +159,36 @@ export default function SettingsScreen() {
         {/* App info */}
         <View style={styles.appCard}>
           <View style={styles.appIcon}>
-            <Ionicons name="cube" size={32} color={Colors.primary.DEFAULT} />
+            <Ionicons name="cube" size={32} color={colors.primary.DEFAULT} />
           </View>
           <View>
             <Text style={styles.appName}>Inventori</Text>
             <Text style={styles.appVersion}>Versi 1.0.0 • Penyimpanan lokal</Text>
+            <Text style={styles.appVersion}>Created by Nightray-HA</Text>
+          </View>
+        </View>
+
+        {/* Tampilan */}
+        <Text style={styles.groupLabel}>Tampilan</Text>
+        <View style={styles.group}>
+          <View style={styles.themeSelector}>
+            {(['light', 'dark', 'system'] as ThemeMode[]).map((m) => (
+              <TouchableOpacity
+                key={m}
+                style={[styles.themeBtn, mode === m && styles.themeBtnActive]}
+                onPress={() => setMode(m)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={m === 'light' ? 'sunny' : m === 'dark' ? 'moon' : 'color-palette'}
+                  size={18}
+                  color={mode === m ? colors.primary.DEFAULT : colors.text.muted}
+                />
+                <Text style={[styles.themeBtnText, mode === m && styles.themeBtnTextActive]}>
+                  {m === 'light' ? 'Terang' : m === 'dark' ? 'Gelap' : 'Sistem'}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -151,8 +199,8 @@ export default function SettingsScreen() {
             icon="person-outline"
             label="Nama Pengguna"
             sublabel={displayUserName || 'Belum diatur'}
-            iconBg={Colors.info.bg}
-            iconColor={Colors.info.DEFAULT}
+            iconBg={colors.info.bg}
+            iconColor={colors.info.DEFAULT}
             onPress={() => { setInputUserName(displayUserName); setShowChangeName(true); }}
           />
         </View>
@@ -164,8 +212,8 @@ export default function SettingsScreen() {
             icon="lock-closed-outline"
             label="Ubah PIN"
             sublabel="Ganti PIN keamanan aplikasi"
-            iconBg={Colors.primary.bg}
-            iconColor={Colors.primary.DEFAULT}
+            iconBg={colors.primary.bg}
+            iconColor={colors.primary.DEFAULT}
             onPress={() => { setShowChangePin(true); setPinError(''); }}
           />
           <Divider />
@@ -173,8 +221,8 @@ export default function SettingsScreen() {
             icon="shield-checkmark-outline"
             label="Pasang PIN Baru"
             sublabel="Aktifkan proteksi PIN"
-            iconBg={Colors.success.bg}
-            iconColor={Colors.success.DEFAULT}
+            iconBg={colors.success.bg}
+            iconColor={colors.success.DEFAULT}
             onPress={() => { setShowSetPin(true); setPinError(''); }}
           />
           <Divider />
@@ -182,10 +230,23 @@ export default function SettingsScreen() {
             icon="lock-open-outline"
             label="Hapus PIN"
             sublabel="Nonaktifkan keamanan PIN"
-            iconBg={Colors.danger.bg}
-            iconColor={Colors.danger.DEFAULT}
+            iconBg={colors.danger.bg}
+            iconColor={colors.danger.DEFAULT}
             dangerous
             onPress={handleRemovePin}
+          />
+        </View>
+
+        {/* Storage */}
+        <Text style={styles.groupLabel}>Penyimpanan</Text>
+        <View style={styles.group}>
+          <SettingsRow
+            icon="folder-outline"
+            label="Direktori Laporan"
+            sublabel={storagePath}
+            iconBg={colors.warning.bg}
+            iconColor={colors.warning.DEFAULT}
+            onPress={handleChangeDirectory}
           />
         </View>
 
@@ -195,24 +256,24 @@ export default function SettingsScreen() {
           <SettingsRow
             icon="cube-outline"
             label="Master Barang"
-            iconBg={Colors.info.bg}
-            iconColor={Colors.info.DEFAULT}
+            iconBg={colors.info.bg}
+            iconColor={colors.info.DEFAULT}
             onPress={() => router.push('/(main)/master')}
           />
           <Divider />
           <SettingsRow
             icon="swap-vertical-outline"
             label="Input Transaksi"
-            iconBg={Colors.primary.bg}
-            iconColor={Colors.primary.DEFAULT}
+            iconBg={colors.primary.bg}
+            iconColor={colors.primary.DEFAULT}
             onPress={() => router.push('/(main)/transaksi')}
           />
           <Divider />
           <SettingsRow
             icon="bar-chart-outline"
             label="Laporan"
-            iconBg={Colors.success.bg}
-            iconColor={Colors.success.DEFAULT}
+            iconBg={colors.success.bg}
+            iconColor={colors.success.DEFAULT}
             onPress={() => router.push('/(main)/laporan')}
           />
         </View>
@@ -220,11 +281,11 @@ export default function SettingsScreen() {
         {/* About */}
         <Text style={styles.groupLabel}>Tentang</Text>
         <View style={styles.group}>
-          <SettingsRow icon="information-circle-outline" label="Inventori App" sublabel="Aplikasi pencatatan barang offline" iconBg={Colors.bg.elevated} iconColor={Colors.text.muted} />
+          <SettingsRow icon="information-circle-outline" label="Inventori App" sublabel="Aplikasi pencatatan barang offline" iconBg={colors.bg.elevated} iconColor={colors.text.muted} />
           <Divider />
-          <SettingsRow icon="server-outline" label="Database" sublabel="SQLite lokal di device" iconBg={Colors.bg.elevated} iconColor={Colors.text.muted} />
+          <SettingsRow icon="server-outline" label="Database" sublabel="SQLite lokal di device" iconBg={colors.bg.elevated} iconColor={colors.text.muted} />
           <Divider />
-          <SettingsRow icon="shield-outline" label="Data & Privasi" sublabel="Data tersimpan di device, tidak dikirim ke server" iconBg={Colors.bg.elevated} iconColor={Colors.text.muted} />
+          <SettingsRow icon="shield-outline" label="Data & Privasi" sublabel="Data tersimpan di device, tidak dikirim ke server" iconBg={colors.bg.elevated} iconColor={colors.text.muted} />
         </View>
 
         <View style={{ height: 40 }} />
@@ -260,32 +321,37 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg.primary },
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.primary },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: Spacing.screenPadding, paddingTop: 12, paddingBottom: 16 },
-  backBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.bg.elevated, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  backBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.bg.elevated, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text.primary },
   content: { paddingHorizontal: Spacing.screenPadding, gap: 0 },
   appCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    backgroundColor: Colors.bg.surface,
+    backgroundColor: colors.bg.surface,
     borderRadius: Spacing.radius.xl,
     borderWidth: 1,
-    borderColor: Colors.border.subtle,
+    borderColor: colors.border.subtle,
     padding: 20,
     marginBottom: 24,
   },
-  appIcon: { width: 56, height: 56, borderRadius: 16, backgroundColor: Colors.primary.bg, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: Colors.primary.dark },
-  appName: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: Colors.text.primary },
-  appVersion: { fontSize: Typography.size.sm, color: Colors.text.muted, marginTop: 2 },
-  groupLabel: { fontSize: Typography.size.xs, fontWeight: Typography.weight.semibold, color: Colors.text.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 4 },
-  group: { backgroundColor: Colors.bg.surface, borderRadius: Spacing.radius.lg, borderWidth: 1, borderColor: Colors.border.subtle, marginBottom: 20, overflow: 'hidden' },
+  appIcon: { width: 56, height: 56, borderRadius: 16, backgroundColor: colors.primary.bg, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.primary.dark },
+  appName: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text.primary },
+  appVersion: { fontSize: Typography.size.sm, color: colors.text.muted, marginTop: 2 },
+  groupLabel: { fontSize: Typography.size.xs, fontWeight: Typography.weight.semibold, color: colors.text.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, marginTop: 4 },
+  group: { backgroundColor: colors.bg.surface, borderRadius: Spacing.radius.lg, borderWidth: 1, borderColor: colors.border.subtle, marginBottom: 20, overflow: 'hidden' },
   settingsRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14 },
   settingsIcon: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   settingsText: { flex: 1, gap: 2 },
-  settingsLabel: { fontSize: Typography.size.base, color: Colors.text.primary, fontWeight: Typography.weight.medium },
-  settingsSublabel: { fontSize: Typography.size.xs, color: Colors.text.muted },
+  settingsLabel: { fontSize: Typography.size.base, color: colors.text.primary, fontWeight: Typography.weight.medium },
+  settingsSublabel: { fontSize: Typography.size.xs, color: colors.text.muted },
+  themeSelector: { flexDirection: 'row', padding: 8, gap: 8, backgroundColor: colors.bg.elevated, borderRadius: Spacing.radius.lg },
+  themeBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: Spacing.radius.md, borderWidth: 1, borderColor: 'transparent' },
+  themeBtnActive: { backgroundColor: colors.bg.surface, borderColor: colors.primary.DEFAULT + '40', elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  themeBtnText: { fontSize: Typography.size.sm, color: colors.text.muted, fontWeight: Typography.weight.medium },
+  themeBtnTextActive: { color: colors.primary.DEFAULT, fontWeight: Typography.weight.bold },
   pinForm: { gap: 14 },
 });

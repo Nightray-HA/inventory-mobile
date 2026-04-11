@@ -7,7 +7,9 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 
@@ -41,6 +43,8 @@ export function Button({
   textStyle,
   fullWidth = false,
 }: ButtonProps) {
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const isDisabled = disabled || loading;
 
   return (
@@ -60,7 +64,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'ghost' || variant === 'secondary' ? Colors.primary.DEFAULT : Colors.white}
+          color={variant === 'ghost' || variant === 'secondary' ? colors.primary.DEFAULT : colors.white}
         />
       ) : (
         <>
@@ -75,7 +79,7 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   base: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -90,24 +94,24 @@ const styles = StyleSheet.create({
 
   // Variants
   primary: {
-    backgroundColor: Colors.primary.DEFAULT,
-    borderColor: Colors.primary.DEFAULT,
+    backgroundColor: colors.primary.DEFAULT,
+    borderColor: colors.primary.DEFAULT,
   },
   secondary: {
-    backgroundColor: Colors.bg.elevated,
-    borderColor: Colors.border.default,
+    backgroundColor: colors.bg.elevated,
+    borderColor: colors.border.default,
   },
   danger: {
-    backgroundColor: Colors.danger.DEFAULT,
-    borderColor: Colors.danger.DEFAULT,
+    backgroundColor: colors.danger.DEFAULT,
+    borderColor: colors.danger.DEFAULT,
   },
   success: {
-    backgroundColor: Colors.success.DEFAULT,
-    borderColor: Colors.success.DEFAULT,
+    backgroundColor: colors.success.DEFAULT,
+    borderColor: colors.success.DEFAULT,
   },
   ghost: {
     backgroundColor: 'transparent',
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
   },
 
   // Sizes
@@ -122,11 +126,11 @@ const styles = StyleSheet.create({
   },
 
   // Text variants
-  text_primary: { color: Colors.white },
-  text_secondary: { color: Colors.text.primary },
-  text_danger: { color: Colors.white },
-  text_success: { color: Colors.white },
-  text_ghost: { color: Colors.text.secondary },
+  text_primary: { color: colors.white },
+  text_secondary: { color: colors.text.primary },
+  text_danger: { color: colors.white },
+  text_success: { color: colors.white },
+  text_ghost: { color: colors.text.secondary },
 
   // Text sizes
   textSize_sm: { fontSize: Typography.size.sm },

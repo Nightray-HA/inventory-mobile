@@ -11,13 +11,15 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useItems } from '@/hooks/useItems';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { ImagePickerButton } from '@/components/features/items/ImagePickerButton';
-import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { generateItemCode } from '@/lib/utils/code';
@@ -61,6 +63,8 @@ const initialForm = (): ItemFormData => ({
 });
 
 export default function TambahBarangScreen() {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const { addItem } = useItems();
   const [form, setForm] = useState<ItemFormData>(initialForm());
   const [errors, setErrors] = useState<Partial<Record<keyof ItemFormData, string>>>({});
@@ -223,13 +227,13 @@ export default function TambahBarangScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   content: { paddingHorizontal: Spacing.screenPadding, paddingTop: Spacing.md, gap: 0 },
   section: { gap: 14, marginBottom: Spacing.sectionGap },
   sectionTitle: {
     fontSize: Typography.size.sm,
     fontWeight: Typography.weight.semibold,
-    color: Colors.text.muted,
+    color: colors.text.muted,
     textTransform: 'uppercase',
     letterSpacing: Typography.letterSpacing.wider,
     marginBottom: 2,

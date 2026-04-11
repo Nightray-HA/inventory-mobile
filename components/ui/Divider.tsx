@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
 
 interface DividerProps {
   style?: ViewStyle;
@@ -8,12 +8,14 @@ interface DividerProps {
   color?: string;
 }
 
-export function Divider({ style, vertical = false, color = Colors.border.subtle }: DividerProps) {
+export function Divider({ style, vertical = false, color }: DividerProps) {
+  const { colors } = useAppTheme();
+  const bgColor = color ?? colors.border.subtle;
   return (
     <View
       style={[
         vertical ? styles.vertical : styles.horizontal,
-        { backgroundColor: color },
+        { backgroundColor: bgColor },
         style,
       ]}
     />

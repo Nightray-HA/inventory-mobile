@@ -1,10 +1,12 @@
 import { Tabs, Redirect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { isPasswordSet, session } from '@/lib/auth';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -13,6 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function MainLayout() {
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [authChecked, setAuthChecked] = useState(false);
   const [requiresLogin, setRequiresLogin] = useState(false);
 
@@ -40,8 +44,8 @@ export default function MainLayout() {
             paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           },
         ],
-        tabBarActiveTintColor: Colors.tab.active,
-        tabBarInactiveTintColor: Colors.tab.inactive,
+        tabBarActiveTintColor: colors.primary.DEFAULT,
+        tabBarInactiveTintColor: colors.text.muted,
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
       }}
@@ -69,8 +73,8 @@ export default function MainLayout() {
         options={{
           title: 'Transaksi',
           tabBarIcon: ({ color }) => (
-            <View style={[styles.fabIcon, { backgroundColor: color === Colors.tab.active ? Colors.primary.DEFAULT : Colors.bg.elevated }]}>
-              <Ionicons name="swap-vertical" size={22} color={color === Colors.tab.active ? Colors.white : Colors.tab.inactive} />
+            <View style={[styles.fabIcon, { backgroundColor: color === colors.primary.DEFAULT ? colors.primary.DEFAULT : colors.bg.elevated }]}>
+              <Ionicons name="swap-vertical" size={22} color={color === colors.primary.DEFAULT ? colors.white : colors.text.muted} />
             </View>
           ),
         }}
@@ -99,11 +103,11 @@ export default function MainLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   tabBar: {
-    backgroundColor: Colors.tab.bg,
+    backgroundColor: colors.bg.surface,
     borderTopWidth: 1,
-    borderTopColor: Colors.tab.border,
+    borderTopColor: colors.border.subtle,
     paddingTop: 8,
     elevation: 0,
     shadowOpacity: 0,

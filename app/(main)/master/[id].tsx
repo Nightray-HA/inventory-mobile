@@ -13,6 +13,9 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useItems } from '@/hooks/useItems';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Input } from '@/components/ui/Input';
@@ -21,7 +24,6 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ImagePickerButton } from '@/components/features/items/ImagePickerButton';
-import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { formatRupiah, formatQty } from '@/lib/utils/currency';
@@ -50,6 +52,8 @@ const SATUAN_OPTIONS = [
 export default function ItemDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { fetchItem, editItem, deleteItem } = useItems();
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -117,9 +121,9 @@ export default function ItemDetailScreen() {
   if (loading) return <LoadingSpinner fullScreen label="Memuat detail barang..." />;
   if (!item || !form) {
     return (
-      <ScreenWrapper padded>
+      <ScreenWrapper padded style={styles.screen}>
         <AppHeader title="Detail Barang" showBack />
-        <Text style={{ color: Colors.text.muted, textAlign: 'center', marginTop: 40 }}>Barang tidak ditemukan</Text>
+        <Text style={styles.emptyText}>Barang tidak ditemukan</Text>
       </ScreenWrapper>
     );
   }
@@ -128,7 +132,7 @@ export default function ItemDetailScreen() {
   const isOutOfStock = item.stok_saat_ini === 0;
 
   return (
-    <ScreenWrapper padded={false}>
+    <ScreenWrapper padded={false} style={styles.screen}>
       <AppHeader
         title={editing ? 'Edit Barang' : 'Detail Barang'}
         showBack
@@ -156,7 +160,7 @@ export default function ItemDetailScreen() {
                 <Image source={{ uri: item.image_uri }} style={styles.image} resizeMode="cover" />
               ) : (
                 <View style={styles.imagePlaceholder}>
-                  <Ionicons name="cube-outline" size={56} color={Colors.text.muted} />
+                  <Ionicons name="cube-outline" size={56} color={colors.text.muted} />
                   <Text style={styles.noImageText}>Tidak ada foto</Text>
                 </View>
               )}
@@ -183,7 +187,7 @@ export default function ItemDetailScreen() {
                 <View style={styles.statsGrid}>
                   <View style={styles.statItem}>
                     <Text style={styles.statLabel}>Stok Saat Ini</Text>
-                    <Text style={[styles.statValue, isLowStock && { color: Colors.warning.DEFAULT }]}>
+                    <Text style={[styles.statValue, isLowStock && { color: colors.warning.DEFAULT }]}>
                       {formatQty(item.stok_saat_ini, item.satuan)}
                     </Text>
                   </View>
@@ -201,16 +205,16 @@ export default function ItemDetailScreen() {
 
                 <View style={styles.priceGrid}>
                   <View style={styles.priceCard}>
-                    <Ionicons name="arrow-down-circle-outline" size={20} color={Colors.success.DEFAULT} />
+                    <Ionicons name="arrow-down-circle-outline" size={20} color={colors.success.DEFAULT} />
                     <Text style={styles.priceLabel}>Harga Beli</Text>
-                    <Text style={[styles.priceValue, { color: Colors.success.DEFAULT }]}>
+                    <Text style={[styles.priceValue, { color: colors.success.DEFAULT }]}>
                       {formatRupiah(item.harga_beli)}
                     </Text>
                   </View>
                   <View style={styles.priceCard}>
-                    <Ionicons name="arrow-up-circle-outline" size={20} color={Colors.danger.DEFAULT} />
+                    <Ionicons name="arrow-up-circle-outline" size={20} color={colors.danger.DEFAULT} />
                     <Text style={styles.priceLabel}>Harga Jual</Text>
-                    <Text style={[styles.priceValue, { color: Colors.danger.DEFAULT }]}>
+                    <Text style={[styles.priceValue, { color: colors.danger.DEFAULT }]}>
                       {formatRupiah(item.harga_jual)}
                     </Text>
                   </View>
@@ -218,7 +222,7 @@ export default function ItemDetailScreen() {
 
                 {item.catatan && (
                   <View style={styles.noteCard}>
-                    <Ionicons name="document-text-outline" size={16} color={Colors.text.muted} />
+                    <Ionicons name="document-text-outline" size={16} color={colors.text.muted} />
                     <Text style={styles.noteText}>{item.catatan}</Text>
                   </View>
                 )}
@@ -231,14 +235,14 @@ export default function ItemDetailScreen() {
                 <Button
                   label="Catat Masuk"
                   variant="success"
-                  icon={<Ionicons name="add-circle-outline" size={18} color={Colors.white} />}
+                  icon={<Ionicons name="add-circle-outline" size={18} color={colors.white} />}
                   onPress={() => router.push({ pathname: '/(main)/transaksi/masuk', params: { item_id: item.id.toString() } })}
                   style={{ flex: 1 }}
                 />
                 <Button
                   label="Catat Keluar"
                   variant="danger"
-                  icon={<Ionicons name="remove-circle-outline" size={18} color={Colors.white} />}
+                  icon={<Ionicons name="remove-circle-outline" size={18} color={colors.white} />}
                   onPress={() => router.push({ pathname: '/(main)/transaksi/keluar', params: { item_id: item.id.toString() } })}
                   style={{ flex: 1 }}
                 />
@@ -271,53 +275,55 @@ export default function ItemDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  screen: { backgroundColor: colors.bg.primary },
   content: { paddingBottom: 40 },
-  imageContainer: { height: 220, backgroundColor: Colors.bg.elevated, marginBottom: 0 },
+  imageContainer: { height: 220, backgroundColor: colors.bg.elevated, marginBottom: 0 },
   image: { width: '100%', height: '100%' },
   imagePlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  noImageText: { fontSize: Typography.size.sm, color: Colors.text.muted },
+  noImageText: { fontSize: Typography.size.sm, color: colors.text.muted },
   stockBadge: { position: 'absolute', bottom: 12, right: 12 },
   infoSection: { padding: Spacing.screenPadding, gap: 12 },
-  kode: { fontSize: Typography.size.sm, color: Colors.text.muted, letterSpacing: 1, fontWeight: Typography.weight.medium },
-  nama: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  kode: { fontSize: Typography.size.sm, color: colors.text.muted, letterSpacing: 1, fontWeight: Typography.weight.medium },
+  nama: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text.primary },
   tags: { flexDirection: 'row', gap: 8 },
   statsGrid: {
     flexDirection: 'row',
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     borderRadius: Spacing.radius.lg,
     padding: 16,
   },
   statItem: { flex: 1, alignItems: 'center', gap: 4 },
-  statLabel: { fontSize: 11, color: Colors.text.muted },
-  statValue: { fontSize: Typography.size.base, fontWeight: Typography.weight.bold, color: Colors.text.primary },
-  statDivider: { width: 1, backgroundColor: Colors.border.subtle },
+  statLabel: { fontSize: 11, color: colors.text.muted },
+  statValue: { fontSize: Typography.size.base, fontWeight: Typography.weight.bold, color: colors.text.primary },
+  statDivider: { width: 1, backgroundColor: colors.border.subtle },
   priceGrid: { flexDirection: 'row', gap: 12 },
   priceCard: {
     flex: 1,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     borderRadius: Spacing.radius.lg,
     padding: 14,
     alignItems: 'center',
     gap: 4,
     borderWidth: 1,
-    borderColor: Colors.border.subtle,
+    borderColor: colors.border.subtle,
   },
-  priceLabel: { fontSize: Typography.size.xs, color: Colors.text.muted },
+  priceLabel: { fontSize: Typography.size.xs, color: colors.text.muted },
   priceValue: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold },
   noteCard: {
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     borderRadius: Spacing.radius.md,
     padding: 12,
     alignItems: 'flex-start',
   },
-  noteText: { flex: 1, fontSize: Typography.size.sm, color: Colors.text.secondary, lineHeight: 20 },
-  metaText: { fontSize: 11, color: Colors.text.muted },
+  noteText: { flex: 1, fontSize: Typography.size.sm, color: colors.text.secondary, lineHeight: 20 },
+  metaText: { fontSize: 11, color: colors.text.muted },
   actionRow: { flexDirection: 'row', gap: 12, paddingHorizontal: Spacing.screenPadding, marginTop: 8 },
   editForm: { padding: Spacing.screenPadding, gap: 14 },
   row: { flexDirection: 'row', gap: 12 },
   section: { paddingHorizontal: Spacing.screenPadding, paddingTop: 16, paddingBottom: 8 },
   btnRow: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  emptyText: { color: colors.text.muted, textAlign: 'center', marginTop: 40 },
 });

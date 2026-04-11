@@ -11,7 +11,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 
@@ -25,6 +27,8 @@ interface ModalProps {
 }
 
 export function Modal({ visible, onClose, title, children, scrollable = true, maxHeight = '85%' }: ModalProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   return (
     <RNModal
       visible={visible}
@@ -48,7 +52,7 @@ export function Modal({ visible, onClose, title, children, scrollable = true, ma
             <View style={styles.header}>
               <Text style={styles.title}>{title}</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                <Ionicons name="close" size={22} color={Colors.text.secondary} />
+                <Ionicons name="close" size={22} color={colors.text.secondary} />
               </TouchableOpacity>
             </View>
           )}
@@ -69,7 +73,7 @@ export function Modal({ visible, onClose, title, children, scrollable = true, ma
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.65)',
@@ -80,7 +84,7 @@ const styles = StyleSheet.create({
     pointerEvents: 'box-none',
   },
   sheet: {
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     borderTopLeftRadius: Spacing.radius['2xl'],
     borderTopRightRadius: Spacing.radius['2xl'],
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
@@ -94,7 +98,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.border.default,
+    backgroundColor: colors.border.default,
     alignSelf: 'center',
     marginTop: 12,
     marginBottom: 4,
@@ -106,18 +110,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.screenPadding,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border.subtle,
+    borderBottomColor: colors.border.subtle,
   },
   title: {
     fontSize: Typography.size.md,
     fontWeight: Typography.weight.bold,
-    color: Colors.text.primary,
+    color: colors.text.primary,
   },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.bg.surface,
+    backgroundColor: colors.bg.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },

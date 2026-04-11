@@ -10,7 +10,9 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { saveItemImage } from '@/lib/utils/storage';
@@ -22,6 +24,8 @@ interface ImagePickerButtonProps {
 }
 
 export function ImagePickerButton({ uri, onImageSelected, onImageRemoved }: ImagePickerButtonProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const handlePick = () => {
     Alert.alert('Pilih Gambar', 'Ambil foto dari:', [
       {
@@ -78,10 +82,10 @@ export function ImagePickerButton({ uri, onImageSelected, onImageRemoved }: Imag
         <View style={styles.imageWrapper}>
           <Image source={{ uri }} style={styles.image} resizeMode="cover" />
           <TouchableOpacity style={styles.removeBtn} onPress={onImageRemoved}>
-            <Ionicons name="close-circle" size={24} color={Colors.danger.DEFAULT} />
+            <Ionicons name="close-circle" size={24} color={colors.danger.DEFAULT} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.changeBtn} onPress={handlePick}>
-            <Ionicons name="camera-outline" size={16} color={Colors.white} />
+            <Ionicons name="camera-outline" size={16} color={colors.white} />
             <Text style={styles.changeBtnText}>Ganti</Text>
           </TouchableOpacity>
         </View>
@@ -92,7 +96,7 @@ export function ImagePickerButton({ uri, onImageSelected, onImageRemoved }: Imag
   return (
     <TouchableOpacity onPress={handlePick} style={styles.pickerBtn} activeOpacity={0.75}>
       <View style={styles.pickerIcon}>
-        <Ionicons name="camera-outline" size={28} color={Colors.primary.light} />
+        <Ionicons name="camera-outline" size={28} color={colors.primary.light} />
       </View>
       <Text style={styles.pickerLabel}>Tambah Foto Barang</Text>
       <Text style={styles.pickerHint}>JPG, PNG • Opsional</Text>
@@ -100,20 +104,20 @@ export function ImagePickerButton({ uri, onImageSelected, onImageRemoved }: Imag
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {},
   imageWrapper: {
     height: 200,
     borderRadius: Spacing.radius.lg,
     overflow: 'hidden',
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
   },
   image: { width: '100%', height: '100%' },
   removeBtn: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: Colors.bg.primary,
+    backgroundColor: colors.bg.primary,
     borderRadius: 12,
   },
   changeBtn: {
@@ -129,7 +133,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.full,
   },
   changeBtnText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: Typography.size.sm,
     fontWeight: Typography.weight.medium,
   },
@@ -138,27 +142,27 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.radius.lg,
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: Colors.bg.input,
+    backgroundColor: colors.bg.input,
   },
   pickerIcon: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.primary.bg,
+    backgroundColor: colors.primary.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pickerLabel: {
     fontSize: Typography.size.base,
     fontWeight: Typography.weight.medium,
-    color: Colors.text.secondary,
+    color: colors.text.secondary,
   },
   pickerHint: {
     fontSize: Typography.size.xs,
-    color: Colors.text.muted,
+    color: colors.text.muted,
   },
 });

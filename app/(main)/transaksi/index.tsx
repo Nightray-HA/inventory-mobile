@@ -5,13 +5,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '@/hooks/useTransactions';
 import { StatCard } from '@/components/features/dashboard/StatCard';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { formatRupiah } from '@/lib/utils/currency';
 
 export default function TransaksiIndexScreen() {
   const insets = useSafeAreaInsets();
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const { dashboardStats, loadDashboardStats } = useTransactions();
 
   useEffect(() => { loadDashboardStats(); }, []);
@@ -34,8 +38,8 @@ export default function TransaksiIndexScreen() {
           value={`${dashboardStats?.itemMasukHariIni ?? 0} unit`}
           sub={formatRupiah(dashboardStats?.nilaiMasukHariIni ?? 0)}
           icon="arrow-down-circle-outline"
-          color={Colors.success.DEFAULT}
-          bgColor={Colors.success.bg}
+          color={colors.success.DEFAULT}
+          bgColor={colors.success.bg}
           style={{ flex: 1 }}
         />
         <StatCard
@@ -43,8 +47,8 @@ export default function TransaksiIndexScreen() {
           value={`${dashboardStats?.itemKeluarHariIni ?? 0} unit`}
           sub={formatRupiah(dashboardStats?.nilaiKeluarHariIni ?? 0)}
           icon="arrow-up-circle-outline"
-          color={Colors.danger.DEFAULT}
-          bgColor={Colors.danger.bg}
+          color={colors.danger.DEFAULT}
+          bgColor={colors.danger.bg}
           style={{ flex: 1 }}
         />
       </View>
@@ -58,13 +62,13 @@ export default function TransaksiIndexScreen() {
         activeOpacity={0.85}
       >
         <View style={styles.cardIcon}>
-          <Ionicons name="arrow-down-circle" size={40} color={Colors.success.DEFAULT} />
+          <Ionicons name="arrow-down-circle" size={40} color={colors.success.DEFAULT} />
         </View>
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle}>Barang Masuk</Text>
           <Text style={styles.cardDesc}>Catat penerimaan stok dari supplier atau pembelian</Text>
         </View>
-        <Ionicons name="chevron-forward" size={22} color={Colors.success.DEFAULT} />
+        <Ionicons name="chevron-forward" size={22} color={colors.success.DEFAULT} />
       </TouchableOpacity>
 
       {/* Keluar */}
@@ -74,13 +78,13 @@ export default function TransaksiIndexScreen() {
         activeOpacity={0.85}
       >
         <View style={styles.cardIcon}>
-          <Ionicons name="arrow-up-circle" size={40} color={Colors.danger.DEFAULT} />
+          <Ionicons name="arrow-up-circle" size={40} color={colors.danger.DEFAULT} />
         </View>
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle}>Barang Keluar</Text>
           <Text style={styles.cardDesc}>Catat penjualan atau penggunaan stok barang</Text>
         </View>
-        <Ionicons name="chevron-forward" size={22} color={Colors.danger.DEFAULT} />
+        <Ionicons name="chevron-forward" size={22} color={colors.danger.DEFAULT} />
       </TouchableOpacity>
 
       {/* Shortcut history */}
@@ -88,25 +92,25 @@ export default function TransaksiIndexScreen() {
         style={styles.historyLink}
         onPress={() => router.push('/(main)/history')}
       >
-        <Ionicons name="time-outline" size={18} color={Colors.primary.DEFAULT} />
+        <Ionicons name="time-outline" size={18} color={colors.primary.DEFAULT} />
         <Text style={styles.historyLinkText}>Lihat Riwayat Transaksi</Text>
-        <Ionicons name="arrow-forward" size={16} color={Colors.primary.DEFAULT} />
+        <Ionicons name="arrow-forward" size={16} color={colors.primary.DEFAULT} />
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg.primary },
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.primary },
   content: { paddingHorizontal: Spacing.screenPadding, paddingBottom: 40, gap: 0 },
   header: { paddingTop: 24, paddingBottom: 20 },
-  title: { fontSize: Typography.size['2xl'], fontWeight: Typography.weight.bold, color: Colors.text.primary },
-  subtitle: { fontSize: Typography.size.sm, color: Colors.text.muted, marginTop: 4 },
+  title: { fontSize: Typography.size['2xl'], fontWeight: Typography.weight.bold, color: colors.text.primary },
+  subtitle: { fontSize: Typography.size.sm, color: colors.text.muted, marginTop: 4 },
   statsRow: { flexDirection: 'row', gap: 12, marginBottom: 28 },
   sectionLabel: {
     fontSize: Typography.size.sm,
     fontWeight: Typography.weight.semibold,
-    color: Colors.text.muted,
+    color: colors.text.muted,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 14,
@@ -121,17 +125,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardMasuk: {
-    backgroundColor: Colors.success.bg,
-    borderColor: Colors.success.dark + '50',
+    backgroundColor: colors.success.bg,
+    borderColor: colors.success.dark + '50',
   },
   cardKeluar: {
-    backgroundColor: Colors.danger.bg,
-    borderColor: Colors.danger.dark + '50',
+    backgroundColor: colors.danger.bg,
+    borderColor: colors.danger.dark + '50',
   },
   cardIcon: {},
   cardContent: { flex: 1, gap: 4 },
-  cardTitle: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: Colors.text.primary },
-  cardDesc: { fontSize: Typography.size.sm, color: Colors.text.secondary, lineHeight: 18 },
+  cardTitle: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text.primary },
+  cardDesc: { fontSize: Typography.size.sm, color: colors.text.secondary, lineHeight: 18 },
   historyLink: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -140,5 +144,5 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 8,
   },
-  historyLinkText: { fontSize: Typography.size.base, color: Colors.primary.DEFAULT, fontWeight: Typography.weight.medium },
+  historyLinkText: { fontSize: Typography.size.base, color: colors.primary.DEFAULT, fontWeight: Typography.weight.medium },
 });

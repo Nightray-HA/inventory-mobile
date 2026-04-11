@@ -12,7 +12,9 @@ import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
 import { setPassword, session, setUserName } from '@/lib/auth';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { Button } from '@/components/ui/Button';
@@ -29,6 +31,8 @@ export default function SetupScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(false);
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
 
   const handleDigit = async (d: string) => {
     const newPin = [...pin, d];
@@ -81,7 +85,7 @@ export default function SetupScreen() {
         {/* Logo */}
         <View style={styles.logoWrapper}>
           <View style={styles.logoIcon}>
-            <Ionicons name="cube" size={40} color={Colors.primary.DEFAULT} />
+            <Ionicons name="cube" size={40} color={colors.primary.DEFAULT} />
           </View>
           <Text style={styles.appName}>Inventori</Text>
         </View>
@@ -144,7 +148,7 @@ export default function SetupScreen() {
                 if (d === '⌫') {
                   return (
                     <TouchableOpacity key={i} style={styles.numKey} onPress={handleBackspace} activeOpacity={0.6}>
-                      <Ionicons name="backspace-outline" size={24} color={Colors.text.secondary} />
+                      <Ionicons name="backspace-outline" size={24} color={colors.text.secondary} />
                     </TouchableOpacity>
                   );
                 }
@@ -166,15 +170,15 @@ export default function SetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg.primary },
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.primary },
   inner: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: 28, paddingVertical: 48, paddingHorizontal: Spacing.screenPadding },
   logoWrapper: { alignItems: 'center', gap: 10 },
   logoIcon: {
     width: 72,
     height: 72,
     borderRadius: 22,
-    backgroundColor: Colors.primary.bg,
+    backgroundColor: colors.primary.bg,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
@@ -202,27 +206,27 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Colors.border.default,
   },
-  stepDotActive: { borderColor: Colors.primary.DEFAULT, backgroundColor: Colors.primary.DEFAULT },
-  stepDotDone: { borderColor: Colors.success.DEFAULT, backgroundColor: Colors.success.DEFAULT },
-  stepLine: { width: 40, height: 2, backgroundColor: Colors.border.default },
-  stepNum: { fontSize: Typography.size.sm, color: Colors.text.muted, fontWeight: Typography.weight.semibold },
-  stepNumActive: { color: Colors.white },
-  title: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: Colors.text.primary, textAlign: 'center' },
-  subtitle: { fontSize: Typography.size.sm, color: Colors.text.muted, textAlign: 'center', lineHeight: Typography.size.sm * 1.6 },
+  stepDotActive: { borderColor: colors.primary.DEFAULT, backgroundColor: colors.primary.DEFAULT },
+  stepDotDone: { borderColor: colors.success.DEFAULT, backgroundColor: colors.success.DEFAULT },
+  stepLine: { width: 40, height: 2, backgroundColor: colors.border.default },
+  stepNum: { fontSize: Typography.size.sm, color: colors.text.muted, fontWeight: Typography.weight.semibold },
+  stepNumActive: { color: colors.white },
+  title: { fontSize: Typography.size.md, fontWeight: Typography.weight.bold, color: colors.text.primary, textAlign: 'center' },
+  subtitle: { fontSize: Typography.size.sm, color: colors.text.muted, textAlign: 'center', lineHeight: Typography.size.sm * 1.6 },
   dotsRow: { flexDirection: 'row', gap: 16, marginTop: 4 },
   dot: {
     width: 16,
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
   },
-  dotFilled: { backgroundColor: Colors.primary.DEFAULT, borderColor: Colors.primary.DEFAULT },
-  dotError: { borderColor: Colors.danger.DEFAULT },
-  errorText: { fontSize: Typography.size.sm, color: Colors.danger.DEFAULT },
+  dotFilled: { backgroundColor: colors.primary.DEFAULT, borderColor: colors.primary.DEFAULT },
+  dotError: { borderColor: colors.danger.DEFAULT },
+  errorText: { fontSize: Typography.size.sm, color: colors.danger.DEFAULT },
   numpad: { flexDirection: 'row', flexWrap: 'wrap', width: 280 },
   numKey: { width: '33.33%', height: 68, alignItems: 'center', justifyContent: 'center' },
-  numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.medium, color: Colors.text.primary },
+  numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.medium, color: colors.text.primary },
   skipBtn: { paddingVertical: 8 },
-  skipText: { fontSize: Typography.size.sm, color: Colors.text.muted, textDecorationLine: 'underline' },
+  skipText: { fontSize: Typography.size.sm, color: colors.text.muted, textDecorationLine: 'underline' },
 });

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 
@@ -13,6 +15,8 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ value, onChangeText, placeholder = 'Cari...', onClear }: SearchBarProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [focused, setFocused] = useState(false);
 
   const handleClear = () => {
@@ -22,12 +26,12 @@ export function SearchBar({ value, onChangeText, placeholder = 'Cari...', onClea
 
   return (
     <View style={[styles.container, focused && styles.focused]}>
-      <Ionicons name="search-outline" size={18} color={focused ? Colors.primary.light : Colors.text.muted} style={styles.icon} />
+      <Ionicons name="search-outline" size={18} color={focused ? colors.primary.light : colors.text.muted} style={styles.icon} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={Colors.text.muted}
+        placeholderTextColor={colors.text.muted}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={styles.input}
@@ -36,31 +40,31 @@ export function SearchBar({ value, onChangeText, placeholder = 'Cari...', onClea
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={handleClear} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="close-circle" size={18} color={Colors.text.muted} />
+          <Ionicons name="close-circle" size={18} color={colors.text.muted} />
         </TouchableOpacity>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.bg.input,
+    backgroundColor: colors.bg.input,
     borderRadius: Spacing.radius.xl,
     borderWidth: 1.5,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
     paddingHorizontal: 14,
     height: 46,
     gap: 8,
   },
-  focused: { borderColor: Colors.border.focus },
+  focused: { borderColor: colors.border.focus },
   icon: {},
   input: {
     flex: 1,
     fontSize: Typography.size.base,
-    color: Colors.text.primary,
+    color: colors.text.primary,
     paddingVertical: 0,
   },
 });

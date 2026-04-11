@@ -12,6 +12,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { RefreshControl } from 'react-native';
 import { useItems } from '@/hooks/useItems';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { SearchBar } from '@/components/ui/SearchBar';
@@ -19,13 +22,14 @@ import { ItemCard } from '@/components/features/items/ItemCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
-import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { type Item } from '@/types';
 
 export default function MasterIndexScreen() {
   const { items, categories, isLoading, loadItems, loadCategories, deleteItem } = useItems();
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [query, setQuery] = useState('');
   const [selectedKategori, setSelectedKategori] = useState<string>('Semua');
 
@@ -57,7 +61,7 @@ export default function MasterIndexScreen() {
   const allCategories = ['Semua', ...categories];
 
   return (
-    <ScreenWrapper padded={false}>
+    <ScreenWrapper padded={false} style={styles.screen}>
       <AppHeader
         title="Master Barang"
         subtitle={`${items.length} barang`}
@@ -122,7 +126,7 @@ export default function MasterIndexScreen() {
             />
           }
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={fetchAll} tintColor={Colors.primary.DEFAULT} />}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={fetchAll} tintColor={colors.primary.DEFAULT} colors={[colors.primary.DEFAULT]} />}
         />
       )}
 
@@ -132,13 +136,14 @@ export default function MasterIndexScreen() {
         onPress={() => router.push('/(main)/master/tambah')}
         activeOpacity={0.85}
       >
-        <Ionicons name="add" size={28} color={Colors.white} />
+        <Ionicons name="add" size={28} color={colors.white} />
       </TouchableOpacity>
     </ScreenWrapper>
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  screen: { backgroundColor: colors.bg.primary },
   searchRow: { paddingHorizontal: Spacing.screenPadding, paddingTop: 12 },
   filterContainer: { height: 56, marginBottom: 8 },
   filterRow: {
@@ -150,20 +155,20 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: Spacing.radius.full,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     borderWidth: 1,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
   },
   filterChipActive: {
-    backgroundColor: Colors.primary.DEFAULT,
-    borderColor: Colors.primary.DEFAULT,
+    backgroundColor: colors.primary.DEFAULT,
+    borderColor: colors.primary.DEFAULT,
   },
   filterChipText: {
     fontSize: Typography.size.sm,
-    color: Colors.text.secondary,
+    color: colors.text.secondary,
     fontWeight: Typography.weight.medium,
   },
-  filterChipTextActive: { color: Colors.white },
+  filterChipTextActive: { color: colors.white },
   listContent: { paddingHorizontal: Spacing.screenPadding, paddingBottom: 100 },
   columnWrapper: { gap: 12 },
   cardWrapper: { flex: 1 },
@@ -174,10 +179,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.primary.DEFAULT,
+    backgroundColor: colors.primary.DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary.DEFAULT,
+    shadowColor: colors.primary.DEFAULT,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,

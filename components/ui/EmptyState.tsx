@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 
 interface EmptyStateProps {
@@ -13,10 +15,12 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ icon = 'file-tray-outline', title, description, action, style }: EmptyStateProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   return (
     <View style={[styles.container, style]}>
       <View style={styles.iconWrapper}>
-        <Ionicons name={icon} size={48} color={Colors.text.muted} />
+        <Ionicons name={icon} size={48} color={colors.text.muted} />
       </View>
       <Text style={styles.title}>{title}</Text>
       {description && <Text style={styles.description}>{description}</Text>}
@@ -25,7 +29,7 @@ export function EmptyState({ icon = 'file-tray-outline', title, description, act
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -37,7 +41,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
@@ -45,12 +49,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.size.md,
     fontWeight: Typography.weight.semibold,
-    color: Colors.text.secondary,
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   description: {
     fontSize: Typography.size.sm,
-    color: Colors.text.muted,
+    color: colors.text.muted,
     textAlign: 'center',
     lineHeight: Typography.size.sm * 1.6,
   },

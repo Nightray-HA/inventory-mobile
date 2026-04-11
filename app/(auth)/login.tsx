@@ -13,7 +13,9 @@ import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
 import { isPasswordSet, verifyPassword, session } from '@/lib/auth';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { Button } from '@/components/ui/Button';
@@ -25,6 +27,8 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const shakeAnim = new Animated.Value(0);
 
   useEffect(() => {
@@ -86,7 +90,7 @@ export default function LoginScreen() {
         {/* Logo */}
         <View style={styles.logoWrapper}>
           <View style={styles.logoIcon}>
-            <Ionicons name="cube" size={40} color={Colors.primary.DEFAULT} />
+            <Ionicons name="cube" size={40} color={colors.primary.DEFAULT} />
           </View>
           <Text style={styles.appName}>Inventori</Text>
           <Text style={styles.appSub}>Sistem Pencatatan Barang</Text>
@@ -117,7 +121,7 @@ export default function LoginScreen() {
             if (d === '⌫') {
               return (
                 <TouchableOpacity key={i} style={styles.numKey} onPress={handleBackspace} activeOpacity={0.6}>
-                  <Ionicons name="backspace-outline" size={24} color={Colors.text.secondary} />
+                  <Ionicons name="backspace-outline" size={24} color={colors.text.secondary} />
                 </TouchableOpacity>
               );
             }
@@ -133,36 +137,36 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg.primary },
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.primary },
   inner: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 40, padding: Spacing.screenPadding },
   logoWrapper: { alignItems: 'center', gap: 10 },
   logoIcon: {
     width: 80,
     height: 80,
     borderRadius: 24,
-    backgroundColor: Colors.primary.bg,
+    backgroundColor: colors.primary.bg,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: Colors.primary.dark,
+    borderColor: colors.primary.dark,
   },
-  appName: { fontSize: Typography.size['2xl'], fontWeight: Typography.weight.bold, color: Colors.text.primary },
-  appSub: { fontSize: Typography.size.sm, color: Colors.text.muted },
+  appName: { fontSize: Typography.size['2xl'], fontWeight: Typography.weight.bold, color: colors.text.primary },
+  appSub: { fontSize: Typography.size.sm, color: colors.text.muted },
   pinSection: { alignItems: 'center', gap: 16 },
-  pinLabel: { fontSize: Typography.size.base, color: Colors.text.secondary, fontWeight: Typography.weight.medium },
+  pinLabel: { fontSize: Typography.size.base, color: colors.text.secondary, fontWeight: Typography.weight.medium },
   dotsRow: { flexDirection: 'row', gap: 16 },
   dot: {
     width: 16,
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
     backgroundColor: 'transparent',
   },
-  dotFilled: { backgroundColor: Colors.primary.DEFAULT, borderColor: Colors.primary.DEFAULT },
-  dotError: { borderColor: Colors.danger.DEFAULT },
-  errorText: { fontSize: Typography.size.sm, color: Colors.danger.DEFAULT },
+  dotFilled: { backgroundColor: colors.primary.DEFAULT, borderColor: colors.primary.DEFAULT },
+  dotError: { borderColor: colors.danger.DEFAULT },
+  errorText: { fontSize: Typography.size.sm, color: colors.danger.DEFAULT },
   numpad: { flexDirection: 'row', flexWrap: 'wrap', width: 280, gap: 0 },
   numKey: {
     width: '33.33%',
@@ -170,5 +174,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.medium, color: Colors.text.primary },
+  numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.medium, color: colors.text.primary },
 });

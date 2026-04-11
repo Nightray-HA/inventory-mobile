@@ -18,9 +18,11 @@ import { getUserName } from '@/lib/auth';
 import { StatCard } from '@/components/features/dashboard/StatCard';
 import { StockAlertCard } from '@/components/features/dashboard/StockAlertCard';
 import { TransactionCard } from '@/components/features/transactions/TransactionCard';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
+import { type ThemeColors } from '@/constants/Colors';
 import { formatRupiah, formatCompact } from '@/lib/utils/currency';
 
 export default function DashboardScreen() {
@@ -29,6 +31,9 @@ export default function DashboardScreen() {
   const { dashboardStats, transactions, loadDashboardStats, loadTransactions, isLoading } = useTransactions();
   const { lowStockItems, loadLowStock } = useItems();
   const [userName, setUserNameStr] = useState('');
+  
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
 
   const load = useCallback(async () => {
     await Promise.all([loadDashboardStats(), loadLowStock(), loadTransactions({ type: 'all' })]);
@@ -50,16 +55,16 @@ export default function DashboardScreen() {
       style={[styles.container, { paddingTop: insets.top }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} tintColor={Colors.primary.DEFAULT} />}
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} tintColor={colors.primary.DEFAULT} />}
     >
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Selamat datang kembali, {userName || 'Pengguna'}</Text>
-          <Text style={styles.greeting}>Dashboard</Text>
+        <View style={{ flex: 1, paddingRight: 12 }}>
+          <Text style={styles.greeting} numberOfLines={1}>Selamat datang kembali di Dashboard, </Text>
+          <Text style={styles.headerTitle} numberOfLines={1}>{userName || 'Pengguna'}</Text>
         </View>
         <TouchableOpacity onPress={() => router.push('/(main)/settings')} style={styles.settingsBtn}>
-          <Ionicons name="settings-outline" size={22} color={Colors.text.secondary} />
+          <Ionicons name="settings-outline" size={22} color={colors.text.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -71,7 +76,7 @@ export default function DashboardScreen() {
           <Text style={styles.bannerSub}>{stats?.totalItem ?? 0} jenis barang aktif</Text>
         </View>
         <View style={styles.bannerIcon}>
-          <Ionicons name="storefront" size={36} color={Colors.primary.light} />
+          <Ionicons name="storefront" size={36} color={colors.primary.light} />
         </View>
       </View>
 
@@ -84,8 +89,8 @@ export default function DashboardScreen() {
             value={formatCompact(stats?.itemMasukHariIni ?? 0)}
             sub={formatRupiah(stats?.nilaiMasukHariIni ?? 0)}
             icon="arrow-down-circle-outline"
-            color={Colors.success.DEFAULT}
-            bgColor={Colors.success.bg}
+            color={colors.success.DEFAULT}
+            bgColor={colors.success.bg}
             style={styles.statCard}
           />
         </TouchableOpacity>
@@ -95,8 +100,8 @@ export default function DashboardScreen() {
             value={formatCompact(stats?.itemKeluarHariIni ?? 0)}
             sub={formatRupiah(stats?.nilaiKeluarHariIni ?? 0)}
             icon="arrow-up-circle-outline"
-            color={Colors.danger.DEFAULT}
-            bgColor={Colors.danger.bg}
+            color={colors.danger.DEFAULT}
+            bgColor={colors.danger.bg}
             style={styles.statCard}
           />
         </TouchableOpacity>
@@ -106,16 +111,16 @@ export default function DashboardScreen() {
           label="Total Barang"
           value={(stats?.totalItem ?? 0).toString()}
           icon="cube-outline"
-          color={Colors.info.DEFAULT}
-          bgColor={Colors.info.bg}
+          color={colors.info.DEFAULT}
+          bgColor={colors.info.bg}
           style={styles.statCard}
         />
         <StatCard
           label="Stok Kritis"
           value={(stats?.itemKritis ?? 0).toString()}
           icon="warning-outline"
-          color={Colors.warning.DEFAULT}
-          bgColor={Colors.warning.bg}
+          color={colors.warning.DEFAULT}
+          bgColor={colors.warning.bg}
           style={styles.statCard}
         />
       </View>
@@ -124,26 +129,26 @@ export default function DashboardScreen() {
       <Text style={styles.sectionTitle}>Aksi Cepat</Text>
       <View style={styles.quickActions}>
         <TouchableOpacity style={styles.qaBtn} onPress={() => router.push('/(main)/transaksi/masuk')} activeOpacity={0.8}>
-          <View style={[styles.qaIcon, { backgroundColor: Colors.success.bg }]}>
-            <Ionicons name="add-circle-outline" size={24} color={Colors.success.DEFAULT} />
+          <View style={[styles.qaIcon, { backgroundColor: colors.success.bg }]}>
+            <Ionicons name="add-circle-outline" size={24} color={colors.success.DEFAULT} />
           </View>
           <Text style={styles.qaLabel}>Barang{'\n'}Masuk</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.qaBtn} onPress={() => router.push('/(main)/transaksi/keluar')} activeOpacity={0.8}>
-          <View style={[styles.qaIcon, { backgroundColor: Colors.danger.bg }]}>
-            <Ionicons name="remove-circle-outline" size={24} color={Colors.danger.DEFAULT} />
+          <View style={[styles.qaIcon, { backgroundColor: colors.danger.bg }]}>
+            <Ionicons name="remove-circle-outline" size={24} color={colors.danger.DEFAULT} />
           </View>
           <Text style={styles.qaLabel}>Barang{'\n'}Keluar</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.qaBtn} onPress={() => router.push('/(main)/master/tambah')} activeOpacity={0.8}>
-          <View style={[styles.qaIcon, { backgroundColor: Colors.primary.bg }]}>
-            <Ionicons name="cube-outline" size={24} color={Colors.primary.DEFAULT} />
+          <View style={[styles.qaIcon, { backgroundColor: colors.primary.bg }]}>
+            <Ionicons name="cube-outline" size={24} color={colors.primary.DEFAULT} />
           </View>
           <Text style={styles.qaLabel}>Tambah{'\n'}Barang</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.qaBtn} onPress={() => router.push('/(main)/laporan')} activeOpacity={0.8}>
-          <View style={[styles.qaIcon, { backgroundColor: Colors.info.bg }]}>
-            <Ionicons name="bar-chart-outline" size={24} color={Colors.info.DEFAULT} />
+          <View style={[styles.qaIcon, { backgroundColor: colors.info.bg }]}>
+            <Ionicons name="bar-chart-outline" size={24} color={colors.info.DEFAULT} />
           </View>
           <Text style={styles.qaLabel}>Laporan</Text>
         </TouchableOpacity>
@@ -177,8 +182,8 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg.primary },
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.primary },
   content: { paddingHorizontal: Spacing.screenPadding, paddingBottom: 40 },
   header: {
     flexDirection: 'row',
@@ -186,41 +191,50 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 20,
   },
-  greeting: { fontSize: Typography.size.sm, color: Colors.text.muted, marginTop: 4 },
-  headerTitle: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  greeting: { fontSize: Typography.size.sm, color: colors.text.muted, marginTop: 4 },
+  headerTitle: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text.primary },
   settingsBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
   banner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.primary.bg,
+    backgroundColor: colors.primary.DEFAULT,
     borderRadius: Spacing.radius.xl,
-    borderWidth: 1,
-    borderColor: Colors.primary.dark + '60',
     padding: 20,
-    marginBottom: 8,
+    marginBottom: Spacing.sectionGap,
+    elevation: 4,
+    shadowColor: colors.primary.DEFAULT,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
-  bannerLeft: { gap: 4 },
-  bannerLabel: { fontSize: Typography.size.sm, color: Colors.primary.light, opacity: 0.8 },
-  bannerValue: { fontSize: Typography.size['2xl'], fontWeight: Typography.weight.bold, color: Colors.primary.light },
-  bannerSub: { fontSize: Typography.size.sm, color: Colors.primary.light, opacity: 0.6 },
-  bannerIcon: { opacity: 0.4 },
+  bannerLeft: { flex: 1, gap: 4 },
+  bannerLabel: { fontSize: Typography.size.sm, color: colors.white, opacity: 0.8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  bannerValue: { fontSize: 26, fontWeight: Typography.weight.bold, color: colors.white },
+  bannerSub: { fontSize: Typography.size.xs, color: colors.white, opacity: 0.9, marginTop: 2 },
+  bannerIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.white + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   sectionTitle: {
     fontSize: Typography.size.base,
     fontWeight: Typography.weight.semibold,
-    color: Colors.text.secondary,
+    color: colors.text.secondary,
     marginTop: Spacing.sectionGap,
     marginBottom: 12,
   },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.sectionGap, marginBottom: 12 },
-  seeAll: { fontSize: Typography.size.sm, color: Colors.primary.DEFAULT, fontWeight: Typography.weight.medium },
+  seeAll: { fontSize: Typography.size.sm, color: colors.primary.DEFAULT, fontWeight: Typography.weight.medium },
   statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 12 },
   statCard: { flex: 1 },
   quickActions: {
@@ -236,7 +250,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  qaLabel: { fontSize: 11, color: Colors.text.secondary, textAlign: 'center', lineHeight: 15 },
+  qaLabel: { fontSize: 11, color: colors.text.secondary, textAlign: 'center', lineHeight: 15 },
   emptyTx: { paddingVertical: 24, alignItems: 'center' },
-  emptyTxText: { fontSize: Typography.size.sm, color: Colors.text.muted },
+  emptyTxText: { fontSize: Typography.size.sm, color: colors.text.muted },
 });

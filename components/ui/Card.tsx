@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Spacing } from '@/constants/Spacing';
 
 interface CardProps {
@@ -11,6 +13,8 @@ interface CardProps {
 }
 
 export function Card({ children, style, padding = Spacing.cardPadding, variant = 'default' }: CardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   return (
     <View style={[styles.card, styles[variant], { padding }, style]}>
       {children}
@@ -18,18 +22,18 @@ export function Card({ children, style, padding = Spacing.cardPadding, variant =
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     borderRadius: Spacing.radius.lg,
     overflow: 'hidden',
   },
   default: {
-    backgroundColor: Colors.bg.surface,
+    backgroundColor: colors.bg.surface,
     borderWidth: 1,
-    borderColor: Colors.border.subtle,
+    borderColor: colors.border.subtle,
   },
   elevated: {
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -37,8 +41,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   bordered: {
-    backgroundColor: Colors.bg.surface,
+    backgroundColor: colors.bg.surface,
     borderWidth: 1.5,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
   },
 });

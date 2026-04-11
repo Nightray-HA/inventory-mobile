@@ -8,7 +8,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Spacing } from '@/constants/Spacing';
 
 interface ScreenWrapperProps {
@@ -27,6 +29,8 @@ export function ScreenWrapper({
   padded = true,
 }: ScreenWrapperProps) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
 
   const content = padded ? (
     <View style={[styles.padded, contentStyle]}>{children}</View>
@@ -37,7 +41,7 @@ export function ScreenWrapper({
   if (scrollable) {
     return (
       <View style={[styles.container, style]}>
-        <StatusBar barStyle="light-content" backgroundColor={Colors.bg.primary} />
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.bg.primary} />
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
@@ -56,16 +60,16 @@ export function ScreenWrapper({
 
   return (
     <View style={[styles.container, style]}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.bg.primary} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.bg.primary} />
       {content}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.bg.primary,
+    backgroundColor: colors.bg.primary,
   },
   scrollContent: {
     flexGrow: 1,

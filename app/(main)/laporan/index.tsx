@@ -14,12 +14,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { useReports } from '@/hooks/useReports';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Divider } from '@/components/ui/Divider';
-import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { toDbDate, formatDate } from '@/lib/utils/date';
@@ -34,6 +36,8 @@ const TYPE_OPTIONS: { label: string; value: ReportType | 'all' }[] = [
 
 export default function LaporanScreen() {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const { filter, transactions, isLoading, isGenerating, loadReport, applyFilter, downloadPdf, downloadExcel } = useReports();
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [endDate, setEndDate] = useState(new Date());
@@ -66,7 +70,15 @@ export default function LaporanScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       stickyHeaderIndices={[0]}
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={loadReport} tintColor={Colors.primary.DEFAULT} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoading}
+          onRefresh={loadReport}
+          tintColor={colors.primary.DEFAULT}
+          colors={[colors.primary.DEFAULT]}
+          progressBackgroundColor={colors.bg.surface}
+        />
+      }
     >
       {/* Sticky header */}
       <View style={styles.header}>
@@ -82,14 +94,14 @@ export default function LaporanScreen() {
           <View style={styles.dateField}>
             <Text style={styles.fieldLabel}>Dari</Text>
             <TouchableOpacity style={styles.dateBtn} onPress={() => setShowStart(true)}>
-              <Ionicons name="calendar-outline" size={16} color={Colors.primary.light} />
+              <Ionicons name="calendar-outline" size={16} color={colors.primary.light} />
               <Text style={styles.dateBtnText}>{formatDate(toDbDate(startDate), 'dd MMM yyyy')}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.dateField}>
             <Text style={styles.fieldLabel}>Sampai</Text>
             <TouchableOpacity style={styles.dateBtn} onPress={() => setShowEnd(true)}>
-              <Ionicons name="calendar-outline" size={16} color={Colors.primary.light} />
+              <Ionicons name="calendar-outline" size={16} color={colors.primary.light} />
               <Text style={styles.dateBtnText}>{formatDate(toDbDate(endDate), 'dd MMM yyyy')}</Text>
             </TouchableOpacity>
           </View>
@@ -126,19 +138,19 @@ export default function LaporanScreen() {
       {/* Summary cards */}
       {!isLoading && transactions.length > 0 && (
         <View style={styles.summaryRow}>
-          <View style={[styles.summaryCard, { borderColor: Colors.success.dark + '40' }]}>
-            <View style={[styles.summaryIcon, { backgroundColor: Colors.success.bg }]}>
-              <Ionicons name="arrow-down-circle" size={20} color={Colors.success.DEFAULT} />
+          <View style={[styles.summaryCard, { borderColor: colors.success.dark + '40' }]}>
+            <View style={[styles.summaryIcon, { backgroundColor: colors.success.bg }]}>
+              <Ionicons name="arrow-down-circle" size={20} color={colors.success.DEFAULT} />
             </View>
             <Text style={styles.summaryLabel}>Total Masuk</Text>
-            <Text style={[styles.summaryValue, { color: Colors.success.DEFAULT }]}>{formatRupiah(totalMasuk)}</Text>
+            <Text style={[styles.summaryValue, { color: colors.success.DEFAULT }]}>{formatRupiah(totalMasuk)}</Text>
           </View>
-          <View style={[styles.summaryCard, { borderColor: Colors.danger.dark + '40' }]}>
-            <View style={[styles.summaryIcon, { backgroundColor: Colors.danger.bg }]}>
-              <Ionicons name="arrow-up-circle" size={20} color={Colors.danger.DEFAULT} />
+          <View style={[styles.summaryCard, { borderColor: colors.danger.dark + '40' }]}>
+            <View style={[styles.summaryIcon, { backgroundColor: colors.danger.bg }]}>
+              <Ionicons name="arrow-up-circle" size={20} color={colors.danger.DEFAULT} />
             </View>
             <Text style={styles.summaryLabel}>Total Keluar</Text>
-            <Text style={[styles.summaryValue, { color: Colors.danger.DEFAULT }]}>{formatRupiah(totalKeluar)}</Text>
+            <Text style={[styles.summaryValue, { color: colors.danger.DEFAULT }]}>{formatRupiah(totalKeluar)}</Text>
           </View>
         </View>
       )}
@@ -152,7 +164,7 @@ export default function LaporanScreen() {
           <Button
             label="PDF"
             variant="danger"
-            icon={<Ionicons name="document-text-outline" size={16} color={Colors.white} />}
+            icon={<Ionicons name="document-text-outline" size={16} color={colors.white} />}
             onPress={downloadPdf}
             loading={isGenerating}
             disabled={transactions.length === 0}
@@ -161,7 +173,7 @@ export default function LaporanScreen() {
           <Button
             label="Excel"
             variant="success"
-            icon={<Ionicons name="grid-outline" size={16} color={Colors.white} />}
+            icon={<Ionicons name="grid-outline" size={16} color={colors.white} />}
             onPress={downloadExcel}
             loading={isGenerating}
             disabled={transactions.length === 0}
@@ -198,7 +210,7 @@ export default function LaporanScreen() {
                 />
                 <Text style={[styles.cellNama]} numberOfLines={1}>{t.item_nama}</Text>
                 <Text style={styles.cellJumlah}>{t.jumlah} {t.item_satuan}</Text>
-                <Text style={[styles.cellTotal, { color: t.type === 'masuk' ? Colors.success.DEFAULT : Colors.danger.DEFAULT }]}>
+                <Text style={[styles.cellTotal, { color: t.type === 'masuk' ? colors.success.DEFAULT : colors.danger.DEFAULT }]}>
                   {formatRupiah(t.total, false)}
                 </Text>
               </View>
@@ -219,56 +231,56 @@ export default function LaporanScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg.primary },
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg.primary },
   content: { gap: 0 },
   header: {
-    backgroundColor: Colors.bg.primary,
+    backgroundColor: colors.bg.primary,
     paddingHorizontal: Spacing.screenPadding,
     paddingTop: 20,
     paddingBottom: 12,
   },
-  title: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  title: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text.primary },
   filterCard: {
     margin: Spacing.screenPadding,
-    backgroundColor: Colors.bg.surface,
+    backgroundColor: colors.bg.surface,
     borderRadius: Spacing.radius.xl,
     borderWidth: 1,
-    borderColor: Colors.border.subtle,
+    borderColor: colors.border.subtle,
     padding: 16,
     gap: 14,
   },
-  filterLabel: { fontSize: Typography.size.base, fontWeight: Typography.weight.semibold, color: Colors.text.primary },
+  filterLabel: { fontSize: Typography.size.base, fontWeight: Typography.weight.semibold, color: colors.text.primary },
   dateRow: { flexDirection: 'row', gap: 12 },
   dateField: { flex: 1, gap: 6 },
-  fieldLabel: { fontSize: Typography.size.xs, color: Colors.text.muted, letterSpacing: 0.5, textTransform: 'uppercase' },
-  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.bg.input, borderRadius: Spacing.radius.md, borderWidth: 1.5, borderColor: Colors.border.default, height: 44, paddingHorizontal: 12 },
-  dateBtnText: { flex: 1, fontSize: Typography.size.sm, color: Colors.text.primary },
+  fieldLabel: { fontSize: Typography.size.xs, color: colors.text.muted, letterSpacing: 0.5, textTransform: 'uppercase' },
+  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.bg.input, borderRadius: Spacing.radius.md, borderWidth: 1.5, borderColor: colors.border.default, height: 44, paddingHorizontal: 12 },
+  dateBtnText: { flex: 1, fontSize: Typography.size.sm, color: colors.text.primary },
   typeRow: { gap: 8 },
   typeChips: { flexDirection: 'row', gap: 8 },
-  chip: { paddingVertical: 7, paddingHorizontal: 16, borderRadius: Spacing.radius.full, backgroundColor: Colors.bg.elevated, borderWidth: 1, borderColor: Colors.border.default },
-  chipActive: { backgroundColor: Colors.primary.DEFAULT, borderColor: Colors.primary.DEFAULT },
-  chipText: { fontSize: Typography.size.sm, color: Colors.text.secondary, fontWeight: Typography.weight.medium },
-  chipTextActive: { color: Colors.white },
+  chip: { paddingVertical: 7, paddingHorizontal: 16, borderRadius: Spacing.radius.full, backgroundColor: colors.bg.elevated, borderWidth: 1, borderColor: colors.border.default },
+  chipActive: { backgroundColor: colors.primary.DEFAULT, borderColor: colors.primary.DEFAULT },
+  chipText: { fontSize: Typography.size.sm, color: colors.text.secondary, fontWeight: Typography.weight.medium },
+  chipTextActive: { color: colors.white },
   summaryRow: { flexDirection: 'row', gap: 12, paddingHorizontal: Spacing.screenPadding, marginBottom: 16 },
-  summaryCard: { flex: 1, backgroundColor: Colors.bg.surface, borderRadius: Spacing.radius.lg, borderWidth: 1, padding: 14, alignItems: 'center', gap: 6 },
+  summaryCard: { flex: 1, backgroundColor: colors.bg.surface, borderRadius: Spacing.radius.lg, borderWidth: 1, padding: 14, alignItems: 'center', gap: 6 },
   summaryIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  summaryLabel: { fontSize: Typography.size.xs, color: Colors.text.muted },
+  summaryLabel: { fontSize: Typography.size.xs, color: colors.text.muted },
   summaryValue: { fontSize: Typography.size.base, fontWeight: Typography.weight.bold },
   downloadSection: { paddingHorizontal: Spacing.screenPadding, marginBottom: 16 },
-  sectionTitle: { fontSize: Typography.size.sm, color: Colors.text.muted, marginBottom: 12 },
+  sectionTitle: { fontSize: Typography.size.sm, color: colors.text.muted, marginBottom: 12 },
   downloadBtns: { flexDirection: 'row', gap: 12 },
-  tableContainer: { marginHorizontal: Spacing.screenPadding, backgroundColor: Colors.bg.surface, borderRadius: Spacing.radius.lg, borderWidth: 1, borderColor: Colors.border.subtle, overflow: 'hidden' },
+  tableContainer: { marginHorizontal: Spacing.screenPadding, backgroundColor: colors.bg.surface, borderRadius: Spacing.radius.lg, borderWidth: 1, borderColor: colors.border.subtle, overflow: 'hidden' },
   tableRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
-  tableHeader: { backgroundColor: Colors.bg.elevated },
-  tableRowEven: { backgroundColor: Colors.bg.primary + '60' },
-  headerCell: { fontSize: 10, fontWeight: Typography.weight.bold, color: Colors.text.muted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  cellTanggal: { width: 58, fontSize: 11, color: Colors.text.secondary },
+  tableHeader: { backgroundColor: colors.bg.elevated },
+  tableRowEven: { backgroundColor: colors.bg.primary + '60' },
+  headerCell: { fontSize: 10, fontWeight: Typography.weight.bold, color: colors.text.muted, textTransform: 'uppercase', letterSpacing: 0.5 },
+  cellTanggal: { width: 58, fontSize: 11, color: colors.text.secondary },
   cellJenis: { width: 40 },
-  cellNama: { flex: 1, fontSize: 12, color: Colors.text.primary },
-  cellJumlah: { width: 60, fontSize: 11, color: Colors.text.secondary, textAlign: 'right' },
+  cellNama: { flex: 1, fontSize: 12, color: colors.text.primary },
+  cellJumlah: { width: 60, fontSize: 11, color: colors.text.secondary, textAlign: 'right' },
   cellTotal: { width: 72, fontSize: 12, fontWeight: Typography.weight.semibold, textAlign: 'right' },
-  totalRow: { backgroundColor: Colors.bg.elevated, borderTopWidth: 1, borderTopColor: Colors.border.default, justifyContent: 'space-between' },
-  totalLabel: { flex: 1, fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold, color: Colors.text.secondary },
-  totalValue: { fontSize: Typography.size.base, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  totalRow: { backgroundColor: colors.bg.elevated, borderTopWidth: 1, borderTopColor: colors.border.default, justifyContent: 'space-between' },
+  totalLabel: { flex: 1, fontSize: Typography.size.sm, fontWeight: Typography.weight.semibold, color: colors.text.secondary },
+  totalValue: { fontSize: Typography.size.base, fontWeight: Typography.weight.bold, color: colors.text.primary },
 });

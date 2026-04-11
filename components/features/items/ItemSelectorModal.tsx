@@ -9,7 +9,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 import { Modal } from '@/components/ui/Modal';
@@ -29,6 +31,8 @@ interface ItemSelectorModalProps {
 
 export function ItemSelectorModal({ visible, onClose, onSelect, selectedId }: ItemSelectorModalProps) {
   const db = useSQLiteContext();
+  const { colors } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<Item[]>([]);
 
@@ -71,7 +75,7 @@ export function ItemSelectorModal({ visible, onClose, onSelect, selectedId }: It
                 <Image source={{ uri: item.image_uri }} style={styles.thumb} />
               ) : (
                 <View style={styles.thumbPlaceholder}>
-                  <Ionicons name="cube-outline" size={20} color={Colors.text.muted} />
+                  <Ionicons name="cube-outline" size={20} color={colors.text.muted} />
                 </View>
               )}
               <View style={styles.itemInfo}>
@@ -88,7 +92,7 @@ export function ItemSelectorModal({ visible, onClose, onSelect, selectedId }: It
                 </View>
               </View>
               {isSelected && (
-                <Ionicons name="checkmark-circle" size={22} color={Colors.primary.DEFAULT} />
+                <Ionicons name="checkmark-circle" size={22} color={colors.primary.DEFAULT} />
               )}
             </TouchableOpacity>
           );
@@ -107,7 +111,7 @@ export function ItemSelectorModal({ visible, onClose, onSelect, selectedId }: It
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   searchWrapper: { marginBottom: 12 },
   list: { maxHeight: 460 },
   item: {
@@ -118,24 +122,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderRadius: Spacing.radius.md,
   },
-  itemSelected: { backgroundColor: Colors.primary.bg },
+  itemSelected: { backgroundColor: colors.primary.bg },
   thumb: { width: 48, height: 48, borderRadius: Spacing.radius.sm },
   thumbPlaceholder: {
     width: 48,
     height: 48,
     borderRadius: Spacing.radius.sm,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
   itemInfo: { flex: 1, gap: 2 },
-  itemKode: { fontSize: 11, color: Colors.text.muted, letterSpacing: 0.5 },
+  itemKode: { fontSize: 11, color: colors.text.muted, letterSpacing: 0.5 },
   itemNama: {
     fontSize: Typography.size.base,
     fontWeight: Typography.weight.medium,
-    color: Colors.text.primary,
+    color: colors.text.primary,
   },
   itemMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
-  itemKategori: { fontSize: Typography.size.xs, color: Colors.text.muted },
-  sep: { height: 1, backgroundColor: Colors.border.subtle },
+  itemKategori: { fontSize: Typography.size.xs, color: colors.text.muted },
+  sep: { height: 1, backgroundColor: colors.border.subtle },
 });

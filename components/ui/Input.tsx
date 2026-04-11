@@ -9,7 +9,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { useAppTheme } from '@/lib/theme';
+import { useStyles } from '@/lib/theme/useStyles';
+import { type ThemeColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
 import { Spacing } from '@/constants/Spacing';
 
@@ -60,6 +62,8 @@ export function Input({
   returnKeyType,
   onSubmitEditing,
 }: InputProps) {
+  const { colors, isDark } = useAppTheme();
+  const styles = useStyles(layoutStyles);
   const [focused, setFocused] = useState(false);
   const [secure, setSecure] = useState(secureInit);
 
@@ -81,7 +85,7 @@ export function Input({
           <Ionicons
             name={leftIcon}
             size={18}
-            color={focused ? Colors.primary.light : Colors.text.muted}
+            color={focused ? colors.primary.light : colors.text.muted}
             style={styles.leftIcon}
           />
         )}
@@ -90,7 +94,7 @@ export function Input({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={Colors.text.muted}
+          placeholderTextColor={colors.text.muted}
           keyboardType={keyboardType}
           secureTextEntry={secure}
           multiline={multiline}
@@ -114,7 +118,7 @@ export function Input({
             <Ionicons
               name={showToggle ? (secure ? 'eye-off-outline' : 'eye-outline') : rightIcon!}
               size={20}
-              color={Colors.text.muted}
+              color={colors.text.muted}
             />
           </TouchableOpacity>
         )}
@@ -128,40 +132,40 @@ export function Input({
   );
 }
 
-const styles = StyleSheet.create({
+const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   wrapper: { gap: 6 },
   label: {
     fontSize: Typography.size.sm,
     fontWeight: Typography.weight.medium,
-    color: Colors.text.secondary,
+    color: colors.text.secondary,
     letterSpacing: Typography.letterSpacing.wide,
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.bg.input,
+    backgroundColor: colors.bg.input,
     borderRadius: Spacing.radius.md,
     borderWidth: 1.5,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
     minHeight: Spacing.inputHeight,
     paddingHorizontal: 14,
   },
-  containerFocused: { borderColor: Colors.border.focus },
-  containerError: { borderColor: Colors.danger.DEFAULT },
+  containerFocused: { borderColor: colors.border.focus },
+  containerError: { borderColor: colors.danger.DEFAULT },
   containerDisabled: { opacity: 0.5 },
   containerMultiline: { alignItems: 'flex-start', paddingVertical: 12 },
   leftIcon: { marginRight: 10 },
   rightIconBtn: { marginLeft: 8, padding: 2 },
-  prefix: { fontSize: Typography.size.base, color: Colors.text.secondary, marginRight: 6 },
-  suffix: { fontSize: Typography.size.base, color: Colors.text.secondary, marginLeft: 6 },
+  prefix: { fontSize: Typography.size.base, color: colors.text.secondary, marginRight: 6 },
+  suffix: { fontSize: Typography.size.base, color: colors.text.secondary, marginLeft: 6 },
   input: {
     flex: 1,
     fontSize: Typography.size.base,
-    color: Colors.text.primary,
+    color: colors.text.primary,
     paddingVertical: 0,
   },
   inputMultiline: { paddingTop: 4, textAlignVertical: 'top' },
-  inputDisabled: { color: Colors.text.muted },
-  errorText: { fontSize: Typography.size.xs, color: Colors.danger.DEFAULT, marginTop: 2 },
-  hintText: { fontSize: Typography.size.xs, color: Colors.text.muted, marginTop: 2 },
+  inputDisabled: { color: colors.text.muted },
+  errorText: { fontSize: Typography.size.xs, color: colors.danger.DEFAULT, marginTop: 2 },
+  hintText: { fontSize: Typography.size.xs, color: colors.text.muted, marginTop: 2 },
 });

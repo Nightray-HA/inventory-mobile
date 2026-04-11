@@ -112,3 +112,39 @@ export async function saveToSafDirectory(tempUri: string, filename: string, mime
   }
   throw new Error("No SAF directory selected");
 }
+
+/**
+ * Decodes a SAF URI into a more human-readable path string.
+ * Example: content://com.android.externalstorage.documents/tree/primary%3ADocuments
+ * Result: Penyimpanan Internal > Documents
+ */
+export function decodeSafUri(uri: string | null): string {
+  if (!uri) return 'Belum diatur (Gunakan default Downloads)';
+  
+  try {
+    const decoded = decodeURIComponent(uri);
+    
+    // Handle Android External Storage Provider (Primary Storage)
+    if (decoded.includes('/tree/primary:')) {
+      const path = decoded.split('/tree/primary:')[1].split('/document/')[0];
+      return `Penyimpanan Internal > ${path.replace(/\//g, ' > ')}`;
+    }
+    
+    // Handle SD Card or other storage providers
+    if (decoded.includes('/tree/')) {
+      const treePart = decoded.split('/tree/')[1].split('/document/')[0];
+      if (treePart.includes(':')) {
+        const [volume, path] = treePart.split(':');
+        // Volume name is usually a hex code for SD cards (e.g. 1234-ABCD)
+        const volumeLabel = volume === 'primary' ? 'Penyimpanan Internal' : `Kartu SD (${volume})`;
+        return `${volumeLabel} > ${path.replace(/\//g, ' > ')}`;
+      }
+      return treePart.replace(/\//g, ' > ');
+    }
+    
+    return decoded;
+  } catch (e) {
+    return uri;
+  }
+}
+

@@ -6,6 +6,7 @@ import { generateAndSharePdf } from '@/lib/reports/pdf.generator';
 import { generateAndShareExcel } from '@/lib/reports/excel.generator';
 import { type Transaction, type ReportFilter } from '@/types';
 import { today } from '@/lib/utils/date';
+import { getSavedSafDirectory, decodeSafUri } from '@/lib/utils/storage';
 
 const defaultFilter = (): ReportFilter => ({
   startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
@@ -50,6 +51,7 @@ export function useReports() {
   );
 
   const downloadPdf = useCallback(async () => {
+    let dirUri = await getSavedSafDirectory();
     if (transactions.length === 0) {
       Alert.alert('Tidak ada data', 'Tidak ada transaksi untuk periode yang dipilih.');
       return;
@@ -57,7 +59,7 @@ export function useReports() {
     setIsGenerating(true);
     try {
       await generateAndSharePdf(transactions, filter);
-      Alert.alert('Berhasil', 'Laporan PDF berhasil diunduh.');
+      Alert.alert('Berhasil', 'Laporan PDF berhasil diunduh ke folder: ' + decodeSafUri(dirUri));
     } catch (e) {
       Alert.alert('Error', 'Gagal membuat laporan PDF.');
     } finally {
@@ -66,6 +68,7 @@ export function useReports() {
   }, [transactions, filter]);
 
   const downloadExcel = useCallback(async () => {
+    let dirUri = await getSavedSafDirectory();
     if (transactions.length === 0) {
       Alert.alert('Tidak ada data', 'Tidak ada transaksi untuk periode yang dipilih.');
       return;
@@ -73,7 +76,7 @@ export function useReports() {
     setIsGenerating(true);
     try {
       await generateAndShareExcel(transactions, filter);
-      Alert.alert('Berhasil', 'Laporan Excel berhasil diunduh.');
+      Alert.alert('Berhasil', 'Laporan Excel berhasil diunduh ke folder: ' + decodeSafUri(dirUri));
     } catch (e) {
       Alert.alert('Error', 'Gagal membuat laporan Excel.');
     } finally {
