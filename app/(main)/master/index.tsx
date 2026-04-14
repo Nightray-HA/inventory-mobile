@@ -66,6 +66,7 @@ export default function MasterIndexScreen() {
         title="Master Barang"
         subtitle={`${items.length} barang`}
         rightAction={{ icon: 'add', onPress: () => router.push('/(main)/master/tambah'), label: 'Tambah' }}
+        rightAction2={{ icon: 'archive-outline', onPress: () => router.push('/(main)/master/arsip') }}
       />
 
       <View style={styles.searchRow}>

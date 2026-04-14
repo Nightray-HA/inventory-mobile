@@ -7,6 +7,7 @@ export default function MasterLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="tambah" />
       <Stack.Screen name="[id]" />
+      <Stack.Screen name="arsip" />
     </Stack>
   );
 }

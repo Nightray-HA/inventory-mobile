@@ -80,7 +80,11 @@ export default function SetupScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
         {/* Logo */}
         <View style={styles.logoWrapper}>
@@ -172,7 +176,7 @@ export default function SetupScreen() {
 
 const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.primary },
-  inner: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: 28, paddingVertical: 48, paddingHorizontal: Spacing.screenPadding },
+  inner: { flexGrow: 1, alignItems: 'center', gap: 28, paddingVertical: 60, paddingHorizontal: Spacing.screenPadding },
   logoWrapper: { alignItems: 'center', gap: 10 },
   logoIcon: {
     width: 72,
@@ -181,30 +185,40 @@ const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
     backgroundColor: colors.primary.bg,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: Colors.primary.dark,
+    borderWidth: 2,
+    borderColor: colors.primary.DEFAULT,
+    shadowColor: colors.primary.DEFAULT,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  appName: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: Colors.text.primary },
+  appName: { fontSize: Typography.size.xl, fontWeight: Typography.weight.bold, color: colors.text.primary },
   card: {
     width: '100%',
-    backgroundColor: Colors.bg.surface,
+    backgroundColor: colors.bg.surface,
     borderRadius: Spacing.radius.xl,
-    borderWidth: 1,
-    borderColor: Colors.border.subtle,
     padding: 24,
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    shadowColor: colors.text.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   stepIndicator: { flexDirection: 'row', alignItems: 'center', gap: 0 },
   stepDot: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.bg.elevated,
+    backgroundColor: colors.bg.elevated,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: Colors.border.default,
+    borderColor: colors.border.default,
   },
   stepDotActive: { borderColor: colors.primary.DEFAULT, backgroundColor: colors.primary.DEFAULT },
   stepDotDone: { borderColor: colors.success.DEFAULT, backgroundColor: colors.success.DEFAULT },
@@ -226,7 +240,7 @@ const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   errorText: { fontSize: Typography.size.sm, color: colors.danger.DEFAULT },
   numpad: { flexDirection: 'row', flexWrap: 'wrap', width: 280 },
   numKey: { width: '33.33%', height: 68, alignItems: 'center', justifyContent: 'center' },
-  numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.medium, color: colors.text.primary },
-  skipBtn: { paddingVertical: 8 },
-  skipText: { fontSize: Typography.size.sm, color: colors.text.muted, textDecorationLine: 'underline' },
+  numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.semibold, color: colors.text.primary },
+  skipBtn: { paddingVertical: 12, marginTop: 10 },
+  skipText: { fontSize: Typography.size.sm, color: colors.text.muted, textDecorationLine: 'underline', fontWeight: Typography.weight.medium },
 });

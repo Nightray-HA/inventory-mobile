@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,13 @@ export default function TransaksiIndexScreen() {
   const { colors } = useAppTheme();
   const styles = useStyles(layoutStyles);
   const { dashboardStats, loadDashboardStats } = useTransactions();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await loadDashboardStats();
+    setRefreshing(false);
+  }, [loadDashboardStats]);
 
   useEffect(() => { loadDashboardStats(); }, []);
 
@@ -25,6 +32,14 @@ export default function TransaksiIndexScreen() {
       style={[styles.container, { paddingTop: insets.top }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.primary.DEFAULT}
+          colors={[colors.primary.DEFAULT]}
+        />
+      }
     >
       <View style={styles.header}>
         <Text style={styles.title}>Transaksi</Text>

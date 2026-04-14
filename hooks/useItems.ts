@@ -6,8 +6,10 @@ import {
   getItemById,
   getCategories,
   getLowStockItems,
+  getDeletedItems,
   createItem,
   updateItem,
+  restoreItem,
   softDeleteItem,
 } from '@/lib/db/items.repository';
 import { type Item, type ItemFormData } from '@/types';
@@ -18,6 +20,7 @@ export function useItems() {
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [lowStockItems, setLowStockItems] = useState<Item[]>([]);
+  const [deletedItems, setDeletedItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +57,18 @@ export function useItems() {
     }
   }, [db]);
 
+  const loadDeletedItems = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getDeletedItems(db);
+      setDeletedItems(data);
+    } catch {
+      setError('Gagal memuat barang terhapus');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [db]);
+
   const fetchItem = useCallback(async (id: number): Promise<Item | null> => {
     return getItemById(db, id);
   }, [db]);
@@ -80,18 +95,28 @@ export function useItems() {
     setLowStockItems((prev) => prev.filter((i) => i.id !== item.id));
   }, [db]);
 
+  const restoreItemById = useCallback(async (id: number): Promise<void> => {
+    await restoreItem(db, id);
+    await loadItems();
+    await loadCategories();
+    await loadDeletedItems();
+  }, [db, loadItems, loadCategories, loadDeletedItems]);
+
   return {
     items,
     categories,
     lowStockItems,
+    deletedItems,
     isLoading,
     error,
     loadItems,
     loadCategories,
     loadLowStock,
+    loadDeletedItems,
     fetchItem,
     addItem,
     editItem,
     deleteItem,
+    restoreItem: restoreItemById,
   };
 }

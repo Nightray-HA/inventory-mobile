@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -25,16 +25,8 @@ import { Spacing } from '@/constants/Spacing';
 import { generateItemCode } from '@/lib/utils/code';
 import { type ItemFormData } from '@/types';
 
-const KATEGORI_OPTIONS = [
-  { label: 'Umum', value: 'Umum' },
-  { label: 'Elektronik', value: 'Elektronik' },
-  { label: 'Makanan & Minuman', value: 'Makanan & Minuman' },
-  { label: 'Peralatan', value: 'Peralatan' },
-  { label: 'Pakaian', value: 'Pakaian' },
-  { label: 'Kesehatan', value: 'Kesehatan' },
-  { label: 'Otomotif', value: 'Otomotif' },
-  { label: 'Lainnya', value: 'Lainnya' },
-];
+const DEFAULT_KATEGORI = ['Umum', 'Elektronik', 'Makanan & Minuman', 'Peralatan', 'Pakaian', 'Kesehatan', 'Otomotif', 'Lainnya'];
+const NEW_CATEGORY_VALUE = '___NEW___';
 
 const SATUAN_OPTIONS = [
   { label: 'pcs', value: 'pcs' },
@@ -65,10 +57,23 @@ const initialForm = (): ItemFormData => ({
 export default function TambahBarangScreen() {
   const { colors } = useAppTheme();
   const styles = useStyles(layoutStyles);
-  const { addItem } = useItems();
+  const { addItem, categories, loadCategories } = useItems();
   const [form, setForm] = useState<ItemFormData>(initialForm());
   const [errors, setErrors] = useState<Partial<Record<keyof ItemFormData, string>>>({});
   const [loading, setLoading] = useState(false);
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
+
+  const kategoriOptions = useMemo(() => {
+    const allCats = Array.from(new Set([...DEFAULT_KATEGORI, ...categories]));
+    const options = allCats.map((cat) => ({ label: cat, value: cat }));
+    options.push({ label: '➕ Tambah Kategori Baru', value: NEW_CATEGORY_VALUE });
+    return options;
+  }, [categories]);
 
   const setField = (field: keyof ItemFormData, value: string | null) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -79,7 +84,13 @@ export default function TambahBarangScreen() {
     const newErrors: typeof errors = {};
     if (!form.nama.trim()) newErrors.nama = 'Nama barang harus diisi';
     if (!form.kode.trim()) newErrors.kode = 'Kode barang harus diisi';
-    if (!form.kategori) newErrors.kategori = 'Pilih kategori';
+    
+    if (isAddingNewCategory) {
+      if (!newCategoryName.trim()) newErrors.kategori = 'Nama kategori baru harus diisi';
+    } else {
+      if (!form.kategori) newErrors.kategori = 'Pilih kategori';
+    }
+
     if (!form.satuan) newErrors.satuan = 'Pilih satuan';
     if (form.harga_beli && isNaN(parseFloat(form.harga_beli))) newErrors.harga_beli = 'Masukkan angka yang valid';
     if (form.harga_jual && isNaN(parseFloat(form.harga_jual))) newErrors.harga_jual = 'Masukkan angka yang valid';
@@ -91,7 +102,11 @@ export default function TambahBarangScreen() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await addItem(form);
+      const finalData = {
+        ...form,
+        kategori: isAddingNewCategory ? newCategoryName.trim() : form.kategori,
+      };
+      await addItem(finalData);
       Alert.alert('Berhasil', `Barang "${form.nama}" berhasil ditambahkan.`, [
         { text: 'OK', onPress: () => router.back() },
       ]);
@@ -144,13 +159,34 @@ export default function TambahBarangScreen() {
             />
             <View style={styles.row}>
               <View style={styles.halfField}>
-                <Select
-                  label="Kategori *"
-                  value={form.kategori}
-                  options={KATEGORI_OPTIONS}
-                  onSelect={(v) => setField('kategori', v)}
-                  error={errors.kategori}
-                />
+                {isAddingNewCategory ? (
+                  <Input
+                    label="Kategori Baru *"
+                    value={newCategoryName}
+                    onChangeText={setNewCategoryName}
+                    placeholder="Nama kategori"
+                    error={errors.kategori}
+                    rightIcon="close-circle-outline"
+                    onRightIconPress={() => {
+                      setIsAddingNewCategory(false);
+                      setNewCategoryName('');
+                    }}
+                  />
+                ) : (
+                  <Select
+                    label="Kategori *"
+                    value={form.kategori}
+                    options={kategoriOptions}
+                    onSelect={(v) => {
+                      if (v === NEW_CATEGORY_VALUE) {
+                        setIsAddingNewCategory(true);
+                      } else {
+                        setField('kategori', v);
+                      }
+                    }}
+                    error={errors.kategori}
+                  />
+                )}
               </View>
               <View style={styles.halfField}>
                 <Select

@@ -179,6 +179,7 @@ export async function getTransactionHistory(
     FROM item_in i
     JOIN items ON items.id = i.item_id
     WHERE i.deleted_at IS NULL
+      AND items.deleted_at IS NULL
       AND i.tanggal BETWEEN ? AND ?
       ${filter.item_id ? 'AND i.item_id = ?' : ''}
   `;
@@ -202,6 +203,7 @@ export async function getTransactionHistory(
     FROM item_out o
     JOIN items ON items.id = o.item_id
     WHERE o.deleted_at IS NULL
+      AND items.deleted_at IS NULL
       AND o.tanggal BETWEEN ? AND ?
       ${filter.item_id ? 'AND o.item_id = ?' : ''}
   `;

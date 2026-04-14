@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   type KeyboardTypeOptions,
+  type ReturnKeyTypeOptions,
   type ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,8 +36,9 @@ interface InputProps {
   maxLength?: number;
   style?: ViewStyle;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  returnKeyType?: 'done' | 'next' | 'go' | 'search';
+  returnKeyType?: ReturnKeyTypeOptions;
   onSubmitEditing?: () => void;
+  autoFocus?: boolean;
 }
 
 export function Input({
@@ -61,6 +63,7 @@ export function Input({
   autoCapitalize = 'sentences',
   returnKeyType,
   onSubmitEditing,
+  autoFocus,
 }: InputProps) {
   const { colors, isDark } = useAppTheme();
   const styles = useStyles(layoutStyles);
@@ -104,6 +107,7 @@ export function Input({
           autoCapitalize={autoCapitalize}
           returnKeyType={returnKeyType}
           onSubmitEditing={onSubmitEditing}
+          autoFocus={autoFocus}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           style={[styles.input, multiline && styles.inputMultiline, !editable && styles.inputDisabled]}

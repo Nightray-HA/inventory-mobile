@@ -148,3 +148,17 @@ export async function adjustStock(
     [delta, itemId],
   );
 }
+
+export async function getDeletedItems(db: SQLiteDatabase): Promise<Item[]> {
+  return db.getAllAsync<Item>(
+    `SELECT * FROM items WHERE deleted_at IS NOT NULL ORDER BY updated_at DESC`,
+  );
+}
+
+export async function restoreItem(db: SQLiteDatabase, id: number): Promise<void> {
+  const now = new Date().toISOString();
+  await db.runAsync(
+    `UPDATE items SET deleted_at = NULL, updated_at = ? WHERE id = ?`,
+    [now, id],
+  );
+}
