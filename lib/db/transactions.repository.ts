@@ -151,6 +151,56 @@ export async function softDeleteItemOut(
   });
 }
 
+// ─── Penyesuaian Stok ──────────────────────────────────────────────────────────
+
+export async function createItemAdjustment(
+  db: SQLiteDatabase,
+  data: {
+    item_id: number;
+    jumlah: number;
+    alasan: string;
+    tanggal: string;
+  },
+): Promise<number> {
+  let newId = 0;
+  await db.withTransactionAsync(async () => {
+    const result = await db.runAsync(
+      `INSERT INTO item_adjustment (item_id, jumlah, alasan, tanggal)
+       VALUES (?, ?, ?, ?)`,
+      [
+        data.item_id,
+        data.jumlah,
+        data.alasan,
+        data.tanggal,
+      ],
+    );
+    newId = result.lastInsertRowId;
+    // Update stock
+    await adjustStock(db, data.item_id, data.jumlah);
+  });
+  return newId;
+}
+
+export async function softDeleteItemAdjustment(
+  db: SQLiteDatabase,
+  id: number,
+): Promise<void> {
+  const now = new Date().toISOString();
+  await db.withTransactionAsync(async () => {
+    const row = await db.getFirstAsync<{ item_id: number; jumlah: number }>(
+      `SELECT item_id, jumlah FROM item_adjustment WHERE id = ? AND deleted_at IS NULL`,
+      [id],
+    );
+    if (!row) return;
+    await db.runAsync(
+      `UPDATE item_adjustment SET deleted_at = ? WHERE id = ?`,
+      [now, id],
+    );
+    // Reverse stock
+    await adjustStock(db, row.item_id, -row.jumlah);
+  });
+}
+
 // ─── Unified Transaction History ──────────────────────────────────────────────
 
 export async function getTransactionHistory(
@@ -208,11 +258,37 @@ export async function getTransactionHistory(
       ${filter.item_id ? 'AND o.item_id = ?' : ''}
   `;
 
+  const adjQuery = `
+    SELECT
+      a.id,
+      'adjustment' AS type,
+      a.item_id,
+      items.nama  AS item_nama,
+      items.kode  AS item_kode,
+      items.satuan AS item_satuan,
+      a.jumlah,
+      0 AS harga,
+      0 AS total,
+      NULL AS pihak,
+      NULL AS referensi,
+      a.tanggal,
+      a.alasan AS catatan,
+      a.created_at
+    FROM item_adjustment a
+    JOIN items ON items.id = a.item_id
+    WHERE a.deleted_at IS NULL
+      AND items.deleted_at IS NULL
+      AND a.tanggal BETWEEN ? AND ?
+      ${filter.item_id ? 'AND a.item_id = ?' : ''}
+  `;
+
   const masukParams: (string | number)[] = [start, end];
   const keluarParams: (string | number)[] = [start, end];
+  const adjParams: (string | number)[] = [start, end];
   if (filter.item_id) {
     masukParams.push(filter.item_id);
     keluarParams.push(filter.item_id);
+    adjParams.push(filter.item_id);
   }
 
   let rows: Transaction[] = [];
@@ -224,6 +300,10 @@ export async function getTransactionHistory(
   if (!filter.type || filter.type === 'all' || filter.type === 'keluar') {
     const keluar = await db.getAllAsync<Transaction>(keluarQuery, keluarParams);
     rows = [...rows, ...keluar];
+  }
+  if (!filter.type || filter.type === 'all' || filter.type === 'adjustment') {
+    const adj = await db.getAllAsync<Transaction>(adjQuery, adjParams);
+    rows = [...rows, ...adj];
   }
 
   // Sort by tanggal desc, then created_at desc

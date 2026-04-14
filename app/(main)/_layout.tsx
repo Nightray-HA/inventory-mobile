@@ -3,7 +3,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState, useCallback } from 'react';
 import { Platform, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { isPasswordSet, session } from '@/lib/auth';
+import { isPasswordSet, session, getUserName, isSecurityQuestionSet } from '@/lib/auth';
 import { useAppTheme } from '@/lib/theme';
 import { useStyles } from '@/lib/theme/useStyles';
 import { type ThemeColors } from '@/constants/Colors';
@@ -19,18 +19,25 @@ export default function MainLayout() {
   const styles = useStyles(layoutStyles);
   const [authChecked, setAuthChecked] = useState(false);
   const [requiresLogin, setRequiresLogin] = useState(false);
+  const [requiresSetup, setRequiresSetup] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const has = await isPasswordSet(db);
-      if (has && !session.isUnlocked) {
+      const hasPwd = await isPasswordSet(db);
+      const name = await getUserName(db);
+      const hasSq = await isSecurityQuestionSet(db);
+      
+      if (!name || !hasPwd || !hasSq) {
+        setRequiresSetup(true);
+      } else if (hasPwd && !session.isUnlocked) {
         setRequiresLogin(true);
       }
       setAuthChecked(true);
     })();
-  }, []);
+  }, [db]);
 
   if (!authChecked) return <LoadingSpinner fullScreen />;
+  if (requiresSetup) return <Redirect href="/(auth)/setup" />;
   if (requiresLogin) return <Redirect href="/(auth)/login" />;
 
   return (

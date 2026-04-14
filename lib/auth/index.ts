@@ -8,6 +8,8 @@ export const session = {
 
 const PASSWORD_KEY = 'inventory_app_password';
 const PASSWORD_SET_FLAG = 'has_password';
+const SECURITY_QUESTION_KEY = 'security_question';
+const SECURITY_ANSWER_KEY = 'security_answer';
 
 // ─── Password Management ──────────────────────────────────────────────────────
 
@@ -60,6 +62,46 @@ export async function changePassword(
 export async function removePassword(db: SQLiteDatabase): Promise<void> {
   await SecureStore.deleteItemAsync(PASSWORD_KEY);
   await deleteSetting(db, PASSWORD_SET_FLAG);
+}
+
+// ─── Security Question ────────────────────────────────────────────────────────
+
+/**
+ * Set security question and answer
+ */
+export async function setSecurityQuestion(
+  db: SQLiteDatabase,
+  question: string,
+  answer: string,
+): Promise<void> {
+  await setSetting(db, SECURITY_QUESTION_KEY, question);
+  // Store answer in lowercase for case-insensitive comparison later
+  await SecureStore.setItemAsync(SECURITY_ANSWER_KEY, answer.toLowerCase().trim());
+}
+
+/**
+ * Get security question
+ */
+export async function getSecurityQuestion(db: SQLiteDatabase): Promise<string | null> {
+  return getSetting(db, SECURITY_QUESTION_KEY);
+}
+
+/**
+ * Verify security answer
+ */
+export async function verifySecurityAnswer(answer: string): Promise<boolean> {
+  const stored = await SecureStore.getItemAsync(SECURITY_ANSWER_KEY);
+  if (!stored) return false;
+  return stored === answer.toLowerCase().trim();
+}
+
+/**
+ * Check if security question is set
+ */
+export async function isSecurityQuestionSet(db: SQLiteDatabase): Promise<boolean> {
+  const q = await getSecurityQuestion(db);
+  const a = await SecureStore.getItemAsync(SECURITY_ANSWER_KEY);
+  return !!q && !!a;
 }
 
 // ─── User Profile ─────────────────────────────────────────────────────────────

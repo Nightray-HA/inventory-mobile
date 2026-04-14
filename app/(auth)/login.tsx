@@ -132,6 +132,15 @@ export default function LoginScreen() {
             );
           })}
         </View>
+
+        {/* Forgot PIN */}
+        <TouchableOpacity 
+          style={styles.forgotBtn} 
+          onPress={() => router.push('/(auth)/reset-password' as any)}
+          activeOpacity={0.6}
+        >
+          <Text style={styles.forgotText}>Lupa PIN?</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -175,4 +184,6 @@ const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: 'center',
   },
   numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.medium, color: colors.text.primary },
+  forgotBtn: { paddingVertical: 10 },
+  forgotText: { fontSize: Typography.size.sm, color: colors.primary.DEFAULT, fontWeight: Typography.weight.semibold },
 });

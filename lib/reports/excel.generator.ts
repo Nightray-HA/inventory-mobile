@@ -16,19 +16,21 @@ export async function generateAndShareExcel(
   const totalKeluar = transactions.filter((t) => t.type === 'keluar').reduce((s, t) => s + t.total, 0);
   const countMasuk = transactions.filter((t) => t.type === 'masuk').length;
   const countKeluar = transactions.filter((t) => t.type === 'keluar').length;
+  const countAdj = transactions.filter((t) => t.type === 'adjustment').length;
 
   const summaryData = [
     ['LAPORAN INVENTORI', ''],
     ['Sistem Pencatatan Barang', ''],
     ['', ''],
     ['Periode', `${formatDate(filter.startDate)} s/d ${formatDate(filter.endDate)}`],
-    ['Jenis Transaksi', filter.type === 'all' ? 'Semua' : filter.type === 'masuk' ? 'Barang Masuk' : 'Barang Keluar'],
+    ['Jenis Transaksi', filter.type === 'all' ? 'Semua' : filter.type === 'masuk' ? 'Barang Masuk' : filter.type === 'keluar' ? 'Barang Keluar' : 'Penyesuaian'],
     ['Dicetak', formatDateTime(new Date().toISOString())],
     ['', ''],
     ['RINGKASAN', ''],
     ['Total Transaksi', transactions.length],
     ['Transaksi Masuk', countMasuk],
     ['Transaksi Keluar', countKeluar],
+    ['Transaksi Penyesuaian', countAdj],
     ['Total Nilai Masuk (Rp)', totalMasuk],
     ['Total Nilai Keluar (Rp)', totalKeluar],
   ];
@@ -56,7 +58,7 @@ export async function generateAndShareExcel(
   const rows = transactions.map((t, i) => [
     i + 1,
     formatDate(t.tanggal),
-    t.type === 'masuk' ? 'MASUK' : 'KELUAR',
+    t.type === 'masuk' ? 'MASUK' : t.type === 'keluar' ? 'KELUAR' : 'PENYESUAIAN',
     t.item_kode,
     t.item_nama,
     t.item_satuan,

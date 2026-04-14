@@ -102,6 +102,22 @@ export default function TransaksiIndexScreen() {
         <Ionicons name="chevron-forward" size={22} color={colors.danger.DEFAULT} />
       </TouchableOpacity>
 
+      {/* Penyesuaian */}
+      <TouchableOpacity
+        style={[styles.card, styles.cardAdjustment]}
+        onPress={() => router.push('/(main)/transaksi/adjustment' as any)}
+        activeOpacity={0.85}
+      >
+        <View style={styles.cardIcon}>
+          <Ionicons name="options-outline" size={40} color={colors.primary.DEFAULT} />
+        </View>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>Penyesuaian Stok</Text>
+          <Text style={styles.cardDesc}>Sesuaikan jumlah stok (plus/minus) dengan alasan tertentu</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={22} color={colors.primary.DEFAULT} />
+      </TouchableOpacity>
+
       {/* Shortcut history */}
       <TouchableOpacity
         style={styles.historyLink}
@@ -146,6 +162,10 @@ const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   cardKeluar: {
     backgroundColor: colors.danger.bg,
     borderColor: colors.danger.dark + '50',
+  },
+  cardAdjustment: {
+    backgroundColor: colors.primary.bg,
+    borderColor: colors.primary.dark + '50',
   },
   cardIcon: {},
   cardContent: { flex: 1, gap: 4 },

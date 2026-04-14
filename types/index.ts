@@ -52,8 +52,23 @@ export interface ItemOut {
   item_satuan?: string;
 }
 
+// ─── Penyesuaian Stok ──────────────────────────────────────────────────────────
+export interface ItemAdjustment {
+  id: number;
+  item_id: number;
+  jumlah: number;
+  alasan: string;
+  tanggal: string;
+  created_at: string;
+  deleted_at: string | null;
+  // joined columns
+  item_nama?: string;
+  item_kode?: string;
+  item_satuan?: string;
+}
+
 // ─── Unified Transaction View ─────────────────────────────────────────────────
-export type TransactionType = 'masuk' | 'keluar';
+export type TransactionType = 'masuk' | 'keluar' | 'adjustment';
 
 export interface Transaction {
   id: number;
@@ -65,10 +80,10 @@ export interface Transaction {
   jumlah: number;
   harga: number;
   total: number;
-  pihak: string | null;       // supplier (masuk) or pelanggan (keluar)
-  referensi: string | null;   // no_faktur (masuk) or no_transaksi (keluar)
+  pihak: string | null;       // supplier (masuk) or pelanggan (keluar) or null (adj)
+  referensi: string | null;   // no_faktur (masuk) or no_transaksi (keluar) or null (adj)
   tanggal: string;
-  catatan: string | null;
+  catatan: string | null;    // catatan (masuk/keluar) or alasan (adj)
   created_at: string;
 }
 
@@ -84,7 +99,7 @@ export interface DashboardStats {
 }
 
 // ─── Reports ─────────────────────────────────────────────────────────────────
-export type ReportType = 'all' | 'masuk' | 'keluar';
+export type ReportType = 'all' | 'masuk' | 'keluar' | 'adjustment';
 
 export interface ReportFilter {
   startDate: string;
@@ -127,6 +142,14 @@ export interface TransaksiKeluarFormData {
   no_transaksi: string;
   tanggal: Date;
   catatan: string;
+}
+
+export interface ItemAdjustmentFormData {
+  item_id: number | null;
+  item_nama: string;
+  jumlah: string;
+  alasan: string;
+  tanggal: Date;
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────

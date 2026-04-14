@@ -9,12 +9,13 @@ import { formatRupiah } from '@/lib/utils/currency';
 function buildHtml(transactions: Transaction[], filter: ReportFilter): string {
   const totalMasuk = transactions.filter((t) => t.type === 'masuk').reduce((s, t) => s + t.total, 0);
   const totalKeluar = transactions.filter((t) => t.type === 'keluar').reduce((s, t) => s + t.total, 0);
+  const totalAdj = transactions.filter((t) => t.type === 'adjustment').length;
 
   const rows = transactions.map((t, i) =>
     `<tr class="${i % 2 === 0 ? 'even' : 'odd'}">
       <td>${i + 1}</td>
       <td>${formatDate(t.tanggal)}</td>
-      <td><span class="badge badge-${t.type}">${t.type === 'masuk' ? 'MASUK' : 'KELUAR'}</span></td>
+      <td><span class="badge badge-${t.type}">${t.type === 'masuk' ? 'MASUK' : t.type === 'keluar' ? 'KELUAR' : 'PENYESUAIAN'}</span></td>
       <td>${t.item_kode}</td>
       <td>${t.item_nama}</td>
       <td style="text-align:right">${t.jumlah} ${t.item_satuan}</td>
@@ -49,6 +50,7 @@ function buildHtml(transactions: Transaction[], filter: ReportFilter): string {
     .summary-card.masuk .summary-value { color: #059669; }
     .summary-card.keluar .summary-value { color: #dc2626; }
     .summary-card.total .summary-value { color: #7c6ff7; }
+    .badge-adjustment { background: #f3e8ff; color: #7c3aed; }
     table { width: 100%; border-collapse: collapse; }
     thead tr { background: #7c6ff7; color: white; }
     thead th { padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
@@ -69,7 +71,7 @@ function buildHtml(transactions: Transaction[], filter: ReportFilter): string {
     </div>
     <div class="meta">
       <div>Periode: <strong>${formatDate(filter.startDate)} – ${formatDate(filter.endDate)}</strong></div>
-      <div>Jenis: <strong>${filter.type === 'all' ? 'Semua Transaksi' : filter.type === 'masuk' ? 'Barang Masuk' : 'Barang Keluar'}</strong></div>
+      <div>Jenis: <strong>${filter.type === 'all' ? 'Semua Transaksi' : filter.type === 'masuk' ? 'Barang Masuk' : filter.type === 'keluar' ? 'Barang Keluar' : 'Penyesuaian Stok'}</strong></div>
       <div>Dicetak: ${formatDateTime(new Date().toISOString())}</div>
       <div>Total data: <strong>${transactions.length} transaksi</strong></div>
     </div>

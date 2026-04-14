@@ -137,7 +137,7 @@ export function Input({
 }
 
 const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
-  wrapper: { gap: 6 },
+  wrapper: { width: '100%', alignSelf: 'stretch', gap: 6 },
   label: {
     fontSize: Typography.size.sm,
     fontWeight: Typography.weight.medium,
@@ -164,6 +164,7 @@ const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   suffix: { fontSize: Typography.size.base, color: colors.text.secondary, marginLeft: 6 },
   input: {
     flex: 1,
+    height: '100%',
     fontSize: Typography.size.base,
     color: colors.text.primary,
     paddingVertical: 0,

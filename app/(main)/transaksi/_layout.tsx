@@ -7,6 +7,7 @@ export default function TransaksiLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="masuk" />
       <Stack.Screen name="keluar" />
+      <Stack.Screen name="adjustment" />
     </Stack>
   );
 }

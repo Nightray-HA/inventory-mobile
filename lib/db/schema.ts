@@ -66,4 +66,18 @@ export const SCHEMA_SQL = `
   CREATE INDEX IF NOT EXISTS idx_item_in_tanggal  ON item_in(tanggal)  WHERE deleted_at IS NULL;
   CREATE INDEX IF NOT EXISTS idx_item_out_item    ON item_out(item_id) WHERE deleted_at IS NULL;
   CREATE INDEX IF NOT EXISTS idx_item_out_tanggal ON item_out(tanggal) WHERE deleted_at IS NULL;
+
+  -- ── Penyesuaian Stok ──────────────────────────────────────────────────────────
+  CREATE TABLE IF NOT EXISTS item_adjustment (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id     INTEGER NOT NULL REFERENCES items(id),
+    jumlah      INTEGER NOT NULL CHECK(jumlah <> 0),
+    alasan      TEXT    NOT NULL,
+    tanggal     TEXT    NOT NULL DEFAULT (date('now','localtime')),
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now','localtime')),
+    deleted_at  TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_item_adj_item    ON item_adjustment(item_id) WHERE deleted_at IS NULL;
+  CREATE INDEX IF NOT EXISTS idx_item_adj_tanggal ON item_adjustment(tanggal) WHERE deleted_at IS NULL;
 `;

@@ -11,7 +11,7 @@ import {
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Ionicons } from '@expo/vector-icons';
-import { setPassword, session, setUserName } from '@/lib/auth';
+import { setPassword, session, setUserName, getUserName, isPasswordSet, setSecurityQuestion } from '@/lib/auth';
 import { useAppTheme } from '@/lib/theme';
 import { useStyles } from '@/lib/theme/useStyles';
 import { type ThemeColors } from '@/constants/Colors';
@@ -24,15 +24,37 @@ const DIGITS = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
 
 export default function SetupScreen() {
   const db = useSQLiteContext();
-  const [step, setStep] = useState<'name' | 'create' | 'confirm'>('name');
+  const [step, setStep] = useState<'name' | 'create' | 'confirm' | 'security'>('name');
   const [userName, setUserNameInput] = useState('');
   const [pin, setPin] = useState<string[]>([]);
   const [firstPin, setFirstPin] = useState('');
+  
+  // Security question state
+  const [securityQuestion, setSecurityQuestionInput] = useState('');
+  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [isCustomQuestion, setIsCustomQuestion] = useState(false);
+  
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [skip, setSkip] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { colors } = useAppTheme();
   const styles = useStyles(layoutStyles);
+
+  React.useEffect(() => {
+    (async () => {
+      const name = await getUserName(db);
+      const hasPwd = await isPasswordSet(db);
+      
+      if (name && !hasPwd) {
+        setUserNameInput(name);
+        setStep('create');
+      } else if (name && hasPwd) {
+        // missing security question only?
+        setUserNameInput(name);
+        setStep('security');
+      }
+      setLoading(false);
+    })();
+  }, [db]);
 
   const handleDigit = async (d: string) => {
     const newPin = [...pin, d];
@@ -52,11 +74,8 @@ export default function SetupScreen() {
           setStep('create');
           setFirstPin('');
         } else {
-          setLoading(true);
-          if (userName.trim()) await setUserName(db, userName.trim());
-          await setPassword(db, confirmed);
-          session.isUnlocked = true;
-          router.replace('/(main)');
+          setStep('security');
+          setPin([]);
         }
       }
     }
@@ -76,8 +95,37 @@ export default function SetupScreen() {
   };
 
   const submitName = () => {
+    if (!userName.trim()) {
+      setError('Nama tidak boleh kosong');
+      return;
+    }
     setStep('create');
   };
+
+  const submitSecurity = async () => {
+    if (!securityQuestion.trim() || !securityAnswer.trim()) {
+      setError('Pertanyaan dan jawaban tidak boleh kosong');
+      return;
+    }
+    setLoading(true);
+    try {
+      if (userName.trim()) await setUserName(db, userName.trim());
+      if (firstPin) await setPassword(db, firstPin);
+      await setSecurityQuestion(db, securityQuestion.trim(), securityAnswer.trim());
+      
+      session.isUnlocked = true;
+      router.replace('/(main)');
+    } catch (e) {
+      setError('Gagal menyimpan pengaturan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const presetQuestions = [
+    'Apa nama hewan peliharaan pertama Anda?',
+    'Apa nama kota kelahiran Anda?',
+  ];
 
   return (
     <KeyboardAvoidingView 
@@ -108,43 +156,89 @@ export default function SetupScreen() {
               />
               <Button label="Lanjut" onPress={submitName} fullWidth style={{ marginTop: 10 }} />
             </>
-          ) : (
+          ) : (step === 'create' || step === 'confirm') ? (
             <>
-              <View style={styles.stepIndicator}>
-                <View style={[styles.stepDot, step === 'create' ? styles.stepDotActive : styles.stepDotDone]}>
-                  {step !== 'create' ? <Ionicons name="checkmark" size={12} color="#fff" /> : <Text style={styles.stepNum}>1</Text>}
-                </View>
-                <View style={styles.stepLine} />
-                <View style={[styles.stepDot, step === 'confirm' && styles.stepDotActive]}>
-                  <Text style={[styles.stepNum, step === 'confirm' && styles.stepNumActive]}>2</Text>
-                </View>
-              </View>
-
-              <Text style={styles.title}>
-                {step === 'create' ? 'Buat PIN Keamanan' : 'Konfirmasi PIN'}
-              </Text>
-              <Text style={styles.subtitle}>
-                {step === 'create'
-                  ? 'PIN 6 digit untuk melindungi data inventori Anda'
-                  : 'Masukkan PIN yang sama untuk konfirmasi'}
-              </Text>
-
-              {/* PIN dots */}
-              <View style={styles.dotsRow}>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <View
-                    key={i}
-                    style={[styles.dot, i < pin.length && styles.dotFilled, !!error && styles.dotError]}
-                  />
-                ))}
-              </View>
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            </>
-          )}
-        </View>
-
-        {/* Numpad */}
-        {step !== 'name' && (
+               <Text style={styles.title}>
+                 {step === 'create' ? 'Buat PIN Keamanan' : 'Konfirmasi PIN'}
+               </Text>
+               <Text style={styles.subtitle}>
+                 {step === 'create'
+                   ? 'PIN 6 digit untuk melindungi data inventori Anda'
+                   : 'Masukkan PIN yang sama untuk konfirmasi'}
+               </Text>
+ 
+               {/* PIN dots */}
+               <View style={styles.dotsRow}>
+                 {Array.from({ length: 6 }).map((_, i) => (
+                   <View
+                     key={i}
+                     style={[styles.dot, i < pin.length && styles.dotFilled, !!error && styles.dotError]}
+                   />
+                 ))}
+               </View>
+               {error ? <Text style={styles.errorText}>{error}</Text> : null}
+             </>
+           ) : (
+            <>
+               <Text style={styles.title}>Pertanyaan Keamanan</Text>
+               <Text style={styles.subtitle}>Digunakan untuk mereset PIN jika Anda lupa.</Text>
+               
+               <View style={{ width: '100%', gap: 12 }}>
+                 {!isCustomQuestion ? (
+                   <>
+                     {presetQuestions.map((q, i) => (
+                       <TouchableOpacity
+                         key={i}
+                         style={[styles.presetItem, securityQuestion === q && styles.presetItemActive]}
+                         onPress={() => {
+                           setSecurityQuestionInput(q);
+                           setError('');
+                         }}
+                       >
+                         <Text style={[styles.presetText, securityQuestion === q && styles.presetTextActive]}>{q}</Text>
+                       </TouchableOpacity>
+                     ))}
+                     <TouchableOpacity
+                       style={[styles.presetItem, isCustomQuestion && styles.presetItemActive]}
+                       onPress={() => {
+                         setIsCustomQuestion(true);
+                         setSecurityQuestionInput('');
+                         setError('');
+                       }}
+                     >
+                       <Text style={styles.presetText}>Tulis pertanyaan sendiri...</Text>
+                     </TouchableOpacity>
+                   </>
+                 ) : (
+                   <View style={{ gap: 8 }}>
+                     <Input
+                       placeholder="Tulis pertanyaan Anda..."
+                       value={securityQuestion}
+                       onChangeText={setSecurityQuestionInput}
+                       autoFocus
+                     />
+                     <TouchableOpacity onPress={() => setIsCustomQuestion(false)}>
+                       <Text style={{ color: colors.primary.DEFAULT, fontSize: 12 }}>Pilih dari daftar</Text>
+                     </TouchableOpacity>
+                   </View>
+                 )}
+ 
+                 <Input
+                   placeholder="Jawaban Anda"
+                   value={securityAnswer}
+                   onChangeText={setSecurityAnswer}
+                   autoCapitalize="none"
+                 />
+               </View>
+ 
+               {error ? <Text style={styles.errorText}>{error}</Text> : null}
+               <Button label="Selesaikan Setup" onPress={submitSecurity} fullWidth loading={loading} />
+             </>
+           )}
+         </View>
+ 
+         {/* Numpad */}
+         {(step === 'create' || step === 'confirm') && (
           <>
             <View style={styles.numpad}>
               {DIGITS.map((d, i) => {
@@ -237,7 +331,20 @@ const layoutStyles = (colors: ThemeColors) => StyleSheet.create({
   },
   dotFilled: { backgroundColor: colors.primary.DEFAULT, borderColor: colors.primary.DEFAULT },
   dotError: { borderColor: colors.danger.DEFAULT },
-  errorText: { fontSize: Typography.size.sm, color: colors.danger.DEFAULT },
+  errorText: { fontSize: Typography.size.sm, color: colors.danger.DEFAULT, textAlign: 'center' },
+  presetItem: {
+    padding: 14,
+    borderRadius: Spacing.radius.md,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    backgroundColor: colors.bg.elevated,
+  },
+  presetItemActive: {
+    borderColor: colors.primary.DEFAULT,
+    backgroundColor: colors.primary.bg,
+  },
+  presetText: { fontSize: 13, color: colors.text.secondary },
+  presetTextActive: { color: colors.primary.DEFAULT, fontWeight: Typography.weight.semibold },
   numpad: { flexDirection: 'row', flexWrap: 'wrap', width: 280 },
   numKey: { width: '33.33%', height: 68, alignItems: 'center', justifyContent: 'center' },
   numText: { fontSize: Typography.size.xl, fontWeight: Typography.weight.semibold, color: colors.text.primary },

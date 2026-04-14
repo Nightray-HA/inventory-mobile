@@ -5,8 +5,10 @@ import {
   getTransactionHistory,
   createItemIn,
   createItemOut,
+  createItemAdjustment,
   softDeleteItemIn,
   softDeleteItemOut,
+  softDeleteItemAdjustment,
 } from '@/lib/db/transactions.repository';
 import { type Transaction, type DashboardStats, type ReportFilter } from '@/types';
 
@@ -88,6 +90,26 @@ export function useTransactions() {
     [db],
   );
 
+  const addAdjustment = useCallback(
+    async (data: {
+      item_id: number;
+      jumlah: number;
+      alasan: string;
+      tanggal: string;
+    }): Promise<void> => {
+      await createItemAdjustment(db, data);
+    },
+    [db],
+  );
+
+  const deleteAdjustment = useCallback(
+    async (id: number): Promise<void> => {
+      await softDeleteItemAdjustment(db, id);
+      setTransactions((prev) => prev.filter((t) => !(t.id === id && t.type === 'adjustment')));
+    },
+    [db],
+  );
+
   return {
     transactions,
     dashboardStats,
@@ -97,7 +119,9 @@ export function useTransactions() {
     loadDashboardStats,
     addMasuk,
     addKeluar,
+    addAdjustment,
     deleteMasuk,
     deleteKeluar,
+    deleteAdjustment,
   };
 }
